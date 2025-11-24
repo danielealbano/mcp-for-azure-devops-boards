@@ -1,6 +1,6 @@
-use azure_devops_mcp::azure::client::AzureDevOpsClient;
-use azure_devops_mcp::mcp::server::AzureMcpServer;
-use azure_devops_mcp::server::http;
+use azure_devops_boards_mcp_rust::azure::client::AzureDevOpsClient;
+use azure_devops_boards_mcp_rust::mcp::server::AzureMcpServer;
+use azure_devops_boards_mcp_rust::server::http;
 use clap::Parser;
 use rmcp::ServiceExt;
 use rmcp::transport::stdio;
@@ -27,7 +27,6 @@ struct Args {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize logger - set RUST_LOG=debug to see debug logs
     env_logger::init();
     let args = Args::parse();
 
