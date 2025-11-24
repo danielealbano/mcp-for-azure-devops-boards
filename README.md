@@ -1,5 +1,8 @@
 # Azure DevOps MCP Server
 
+[![CI - PR - Build & Test](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/ci-pr-build-and-test.yml/badge.svg)](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/ci-pr-build-and-test.yml)
+[![CD - Tag - Build & Release](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/cd-tag-build-and-release.yml/badge.svg)](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/cd-tag-build-and-release.yml)
+
 A Model Context Protocol (MCP) server for interacting with Azure DevOps Boards and Work Items, written in Rust.
 
 ## Features
