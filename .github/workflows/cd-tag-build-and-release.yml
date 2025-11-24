@@ -75,6 +75,26 @@ jobs:
       - name: List downloaded files (debug)
         run: ls -R dist
 
+      - name: Prepare macOS tar.gz
+        run: |
+          set -eux
+          TAG="${GITHUB_REF_NAME}"
+          # artifact directory is dist/<artifact-name>/...
+          MAC_DIR="dist/azure-devops-boards-mcp-rust-macos-aarch64"
+          cp "${MAC_DIR}/azure-devops-boards-mcp-rust-macos-aarch64" azure-devops-boards-mcp-rust
+          tar czf "azure-devops-boards-mcp-rust-${TAG}-macos-aarch64.tar.gz" azure-devops-boards-mcp-rust
+          ls -l "azure-devops-boards-mcp-rust-${TAG}-macos-aarch64.tar.gz"
+
+      - name: Prepare Windows zip
+        run: |
+          set -eux
+          TAG="${GITHUB_REF_NAME}"
+          WIN_DIR="dist/azure-devops-boards-mcp-rust-windows-x86_64"
+          # Normalize name inside zip:
+          cp "${WIN_DIR}/azure-devops-boards-mcp-rust-windows-x86_64.exe" azure-devops-boards-mcp-rust.exe
+          zip "azure-devops-boards-mcp-rust-${TAG}-windows-x86_64.zip" azure-devops-boards-mcp-rust.exe
+          ls -l "azure-devops-boards-mcp-rust-${TAG}-windows-x86_64.zip"
+
       - name: Create draft release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
@@ -84,6 +104,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           generate_release_notes: true
-          files: dist/**/azure-devops-boards-mcp-rust-*
+          files: |
+            azure-devops-boards-mcp-rust-${{ github.ref_name }}-macos-aarch64.tar.gz
+            azure-devops-boards-mcp-rust-${{ github.ref_name }}-windows-x86_64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
