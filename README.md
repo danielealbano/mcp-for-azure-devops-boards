@@ -64,8 +64,6 @@ The executable will be located at `./target/release/azure-devops-boards-mcp-rust
 
 ### Stdio Mode (Default)
 
-### Stdio Mode (Default)
-
 This is the standard mode for MCP clients (like Claude Desktop or Cursor). **This mode is preferred for security as it ensures no credentials are shared over the network.**
 
 ```bash
