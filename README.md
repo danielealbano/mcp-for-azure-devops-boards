@@ -10,11 +10,6 @@ A Model Context Protocol (MCP) server for interacting with Azure DevOps Boards a
 -   **WIQL Support**: Run custom WIQL queries.
 -   **Simplified Output**: Optimized JSON output for LLM consumption (reduced token usage).
 
-## Prerequisites
-
--   [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
--   [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) (required for local authentication)
-
 ## Installation
 
 ### macOS (Homebrew)
@@ -25,6 +20,13 @@ brew install azure-devops-boards-mcp-rust
 ```
 
 ### Building from Source
+
+#### Prerequisites
+
+-   [Rust](https://www.rust-lang.org/tools/install) (latest stable version)
+-   [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) (required for local authentication)
+
+#### Steps
 
 1.  Clone the repository:
     ```bash
