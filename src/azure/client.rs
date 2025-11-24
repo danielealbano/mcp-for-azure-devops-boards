@@ -6,6 +6,8 @@ use serde::de::DeserializeOwned;
 use std::sync::Arc;
 use thiserror::Error;
 
+const AZURE_DEVOPS_SCOPE: &str = "499b84ac-1321-427f-aa17-267ca6975798";
+
 #[derive(Error, Debug)]
 pub enum AzureError {
     #[error("Authentication failed: {0}")]
@@ -38,10 +40,7 @@ impl AzureDevOpsClient {
     }
 
     async fn get_token(&self) -> Result<String, AzureError> {
-        let token_response = self
-            .credential
-            .get_token("499b84ac-1321-427f-aa17-267ca6975798")
-            .await?;
+        let token_response = self.credential.get_token(AZURE_DEVOPS_SCOPE).await?;
         Ok(token_response.token.secret().to_string())
     }
 
