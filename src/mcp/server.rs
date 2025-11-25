@@ -102,6 +102,10 @@ pub struct AzureMcpServer {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetBoardArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Team ID or name
     team_id: String,
     /// Board ID or name
@@ -110,30 +114,68 @@ struct GetBoardArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListBoardsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Team ID or name
     team_id: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
+struct ListTeamsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListWorkItemTypesArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
 struct GetTeamArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Team ID or name
     team_id: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct GetWorkItemArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Work item ID
     id: i64,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// WIQL query string (e.g., "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'")
     query: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct CreateWorkItemArgs {
+    // Azure DevOps context
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
+
     // Required fields
     /// Type of work item (Bug, User Story, Task, Epic, Feature, etc.)
     work_item_type: String,
@@ -142,7 +184,7 @@ struct CreateWorkItemArgs {
     title: String,
 
     // Core optional fields
-    /// Work item description (HTML supported)
+    /// Work item description (Basic HTML supported)
     #[serde(default)]
     description: Option<String>,
 
@@ -232,6 +274,10 @@ struct CreateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UpdateWorkItemArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Work item ID to update
     id: u32,
 
@@ -318,6 +364,10 @@ struct UpdateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct AddCommentArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Work item ID to add comment to
     work_item_id: u32,
     /// Comment text (supports markdown)
@@ -326,6 +376,10 @@ struct AddCommentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct LinkWorkItemsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Source work item ID
     source_id: u32,
     /// Target work item ID
@@ -336,6 +390,10 @@ struct LinkWorkItemsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UploadAttachmentArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// File name with extension
     file_name: String,
     /// Base64 encoded file content
@@ -344,6 +402,10 @@ struct UploadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct DownloadAttachmentArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
     /// Attachment ID (GUID)
     id: String,
     /// Optional file name for the downloaded attachment
@@ -352,6 +414,11 @@ struct DownloadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetBoardWorkItemsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
+
     /// Area path to filter by (e.g., "MyProject\\Team1"). Uses UNDER operator to include child paths.
     #[serde(default)]
     area_path: Option<String>,
@@ -435,9 +502,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all teams in the project")]
-    async fn azure_devops_list_teams(&self) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_list_teams(
+        &self,
+        args: Parameters<ListTeamsArgs>,
+    ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: azure_devops_list_teams");
-        let teams = boards::list_teams(&self.client)
+        let teams = boards::list_teams(&self.client, &args.0.organization, &args.0.project)
             .await
             .map_err(|e| McpError {
                 code: ErrorCode(-32000),
@@ -459,13 +529,18 @@ impl AzureMcpServer {
             "Tool invoked: azure_devops_get_team(team_id={})",
             args.0.team_id
         );
-        let team = boards::get_team(&self.client, &args.0.team_id)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let team = boards::get_team(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.team_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&team).unwrap(),
@@ -473,15 +548,19 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all work item types (Stories, Epics, Features, Bugs, etc.)")]
-    async fn azure_devops_list_work_item_types(&self) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_list_work_item_types(
+        &self,
+        args: Parameters<ListWorkItemTypesArgs>,
+    ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: azure_devops_list_work_item_types");
-        let types = boards::list_work_item_types(&self.client)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let types =
+            boards::list_work_item_types(&self.client, &args.0.organization, &args.0.project)
+                .await
+                .map_err(|e| McpError {
+                    code: ErrorCode(-32000),
+                    message: e.to_string().into(),
+                    data: None,
+                })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&types).unwrap(),
@@ -497,13 +576,18 @@ impl AzureMcpServer {
             "Tool invoked: azure_devops_list_boards(team_id={})",
             args.0.team_id
         );
-        let boards = boards::list_boards(&self.client, &args.0.team_id)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let boards = boards::list_boards(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.team_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&boards).unwrap(),
@@ -520,13 +604,19 @@ impl AzureMcpServer {
             args.0.team_id,
             args.0.board_id
         );
-        let board = boards::get_board(&self.client, &args.0.team_id, &args.0.board_id)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let board = boards::get_board(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.team_id,
+            &args.0.board_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&board).unwrap(),
@@ -539,13 +629,18 @@ impl AzureMcpServer {
         args: Parameters<GetWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: azure_devops_get_work_item(id={})", args.0.id);
-        let work_item = work_items::get_work_item(&self.client, args.0.id as u32)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let work_item = work_items::get_work_item(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            args.0.id as u32,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&work_item).unwrap(),
@@ -561,13 +656,18 @@ impl AzureMcpServer {
             "Tool invoked: azure_devops_query_work_items_wiql(query={})",
             args.0.query
         );
-        let items = work_items::query_work_items(&self.client, &args.0.query)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let items = work_items::query_work_items(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.query,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         // Convert to JSON value, simplify, then serialize
         let mut json_value = serde_json::to_value(&items).unwrap();
@@ -730,14 +830,19 @@ impl AzureMcpServer {
             .collect();
 
         // Create the work item via Azure API
-        let work_item =
-            work_items::create_work_item(&self.client, &args.0.work_item_type, &fields_vec)
-                .await
-                .map_err(|e| McpError {
-                    code: ErrorCode(-32000),
-                    message: e.to_string().into(),
-                    data: None,
-                })?;
+        let work_item = work_items::create_work_item(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.work_item_type,
+            &fields_vec,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         // If parent_id is provided, create parent-child link
         if let Some(parent_id) = args.0.parent_id {
@@ -748,6 +853,8 @@ impl AzureMcpServer {
             );
             work_items::link_work_items(
                 &self.client,
+                &args.0.organization,
+                &args.0.project,
                 work_item.id,
                 parent_id,
                 "System.LinkTypes.Hierarchy-Reverse",
@@ -784,14 +891,19 @@ impl AzureMcpServer {
                 data: None,
             })?;
 
-        let attachment =
-            crate::azure::attachments::upload_attachment(&self.client, &args.0.file_name, content)
-                .await
-                .map_err(|e| McpError {
-                    code: ErrorCode(-32000),
-                    message: e.to_string().into(),
-                    data: None,
-                })?;
+        let attachment = crate::azure::attachments::upload_attachment(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.file_name,
+            content,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&attachment).unwrap(),
@@ -811,6 +923,8 @@ impl AzureMcpServer {
 
         let content = crate::azure::attachments::download_attachment(
             &self.client,
+            &args.0.organization,
+            &args.0.project,
             &args.0.id,
             args.0.file_name.as_deref(),
         )
@@ -1012,7 +1126,7 @@ impl AzureMcpServer {
             // If no filters specified, query all work items in the project
             format!(
                 "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '{}'",
-                self.client.project
+                args.0.project
             )
         } else {
             format!(
@@ -1024,13 +1138,18 @@ impl AzureMcpServer {
         log::debug!("Executing WIQL query: {}", query);
 
         // Execute the query to get work items
-        let work_items = work_items::query_work_items(&self.client, &query)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let work_items = work_items::query_work_items(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &query,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         // Convert to JSON value, simplify, then serialize
         let mut json_value = serde_json::to_value(&work_items).unwrap();
@@ -1175,13 +1294,19 @@ impl AzureMcpServer {
             .map(|(k, v)| (k.as_str(), v.clone()))
             .collect();
 
-        let work_item = work_items::update_work_item(&self.client, args.0.id, &fields_vec)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let work_item = work_items::update_work_item(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            args.0.id,
+            &fields_vec,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&work_item).unwrap(),
@@ -1199,13 +1324,19 @@ impl AzureMcpServer {
             args.0.text.len()
         );
 
-        let result = work_items::add_comment(&self.client, args.0.work_item_id, &args.0.text)
-            .await
-            .map_err(|e| McpError {
-                code: ErrorCode(-32000),
-                message: e.to_string().into(),
-                data: None,
-            })?;
+        let result = work_items::add_comment(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            args.0.work_item_id,
+            &args.0.text,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
         Ok(CallToolResult::success(vec![Content::text(
             serde_json::to_string_pretty(&result).unwrap(),
@@ -1238,6 +1369,8 @@ impl AzureMcpServer {
 
         let result = work_items::link_work_items(
             &self.client,
+            &args.0.organization,
+            &args.0.project,
             args.0.source_id,
             args.0.target_id,
             link_type_ref,
