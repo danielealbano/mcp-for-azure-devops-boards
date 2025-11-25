@@ -435,7 +435,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all teams in the project")]
-    async fn list_teams(&self) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_list_teams(&self) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: list_teams");
         let teams = boards::list_teams(&self.client)
             .await
@@ -451,7 +451,10 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get details of a specific team")]
-    async fn get_team(&self, args: Parameters<GetTeamArgs>) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_get_team(
+        &self,
+        args: Parameters<GetTeamArgs>,
+    ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: get_team(team_id={})", args.0.team_id);
         let team = boards::get_team(&self.client, &args.0.team_id)
             .await
@@ -467,7 +470,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all work item types (Stories, Epics, Features, Bugs, etc.)")]
-    async fn list_work_item_types(&self) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_list_work_item_types(&self) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: list_work_item_types");
         let types = boards::list_work_item_types(&self.client)
             .await
@@ -483,7 +486,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List boards for a specific team (requires team_id)")]
-    async fn list_boards(
+    async fn azure_devops_list_boards(
         &self,
         args: Parameters<ListBoardsArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -502,7 +505,10 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get details of a specific board (requires team_id)")]
-    async fn get_board(&self, args: Parameters<GetBoardArgs>) -> Result<CallToolResult, McpError> {
+    async fn azure_devops_get_board(
+        &self,
+        args: Parameters<GetBoardArgs>,
+    ) -> Result<CallToolResult, McpError> {
         log::info!(
             "Tool invoked: get_board(team_id={}, board_id={})",
             args.0.team_id,
@@ -522,7 +528,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get a work item by ID")]
-    async fn get_work_item(
+    async fn azure_devops_get_work_item(
         &self,
         args: Parameters<GetWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -541,7 +547,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Query work items using WIQL (Work Item Query Language)")]
-    async fn query_work_items_wiql(
+    async fn azure_devops_query_work_items_wiql(
         &self,
         args: Parameters<QueryWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -569,7 +575,7 @@ impl AzureMcpServer {
     #[tool(
         description = "Create a new work item with comprehensive field support (type, title, description, area path, iteration, priority, tags, parent relationships, etc.)"
     )]
-    async fn create_work_item(
+    async fn azure_devops_create_work_item(
         &self,
         args: Parameters<CreateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -754,7 +760,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Upload an attachment to Azure DevOps")]
-    async fn upload_attachment(
+    async fn azure_devops_upload_attachment(
         &self,
         args: Parameters<UploadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -787,7 +793,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Download an attachment from Azure DevOps")]
-    async fn download_attachment(
+    async fn azure_devops_download_attachment(
         &self,
         args: Parameters<DownloadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -817,7 +823,7 @@ impl AzureMcpServer {
     #[tool(
         description = "Query work items using field filters (area path, iteration, dates, board columns/rows, work item types, states, tags, assigned to). Supports both include and exclude filters."
     )]
-    async fn query_work_items(
+    async fn azure_devops_query_work_items(
         &self,
         args: Parameters<GetBoardWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -1027,7 +1033,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Update an existing work item with comprehensive field support")]
-    async fn update_work_item(
+    async fn azure_devops_update_work_item(
         &self,
         args: Parameters<UpdateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -1174,7 +1180,7 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Add a comment to a work item")]
-    async fn add_comment(
+    async fn azure_devops_add_comment(
         &self,
         args: Parameters<AddCommentArgs>,
     ) -> Result<CallToolResult, McpError> {
@@ -1200,7 +1206,7 @@ impl AzureMcpServer {
     #[tool(
         description = "Create a link between two work items (Parent, Child, Related, Duplicate, Dependency)"
     )]
-    async fn link_work_items(
+    async fn azure_devops_link_work_items(
         &self,
         args: Parameters<LinkWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
