@@ -13,13 +13,20 @@ pub struct JsonPatchOperation {
     pub from: Option<String>,
 }
 
-pub async fn get_work_item(client: &AzureDevOpsClient, id: u32) -> Result<WorkItem, AzureError> {
+pub async fn get_work_item(
+    client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
+    id: u32,
+) -> Result<WorkItem, AzureError> {
     let path = format!("wit/workitems/{}?api-version=7.1", id);
-    client.get(&path).await
+    client.get(organization, project, &path).await
 }
 
 pub async fn get_work_items(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     ids: &[u32],
 ) -> Result<Vec<WorkItem>, AzureError> {
     if ids.is_empty() {
@@ -48,7 +55,7 @@ pub async fn get_work_items(
             .collect::<Vec<_>>()
             .join(",");
         let path = format!("wit/workitems?ids={}&api-version=7.1", ids_str);
-        let response: WorkItemListResponse = client.get(&path).await?;
+        let response: WorkItemListResponse = client.get(organization, project, &path).await?;
         all_work_items.extend(response.value);
     }
 
@@ -57,6 +64,8 @@ pub async fn get_work_items(
 
 pub async fn create_work_item(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     work_item_type: &str,
     fields: &[(&str, Value)],
 ) -> Result<WorkItem, AzureError> {
@@ -71,11 +80,15 @@ pub async fn create_work_item(
         .collect();
 
     let path = format!("wit/workitems/${}?api-version=7.1", work_item_type);
-    client.post_patch(&path, &operations).await
+    client
+        .post_patch(organization, project, &path, &operations)
+        .await
 }
 
 pub async fn update_work_item(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     id: u32,
     fields: &[(&str, Value)],
 ) -> Result<WorkItem, AzureError> {
@@ -90,11 +103,15 @@ pub async fn update_work_item(
         .collect();
 
     let path = format!("wit/workitems/{}?api-version=7.1", id);
-    client.patch_patch(&path, &operations).await
+    client
+        .patch_patch(organization, project, &path, &operations)
+        .await
 }
 
 pub async fn add_comment(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     work_item_id: u32,
     text: &str,
 ) -> Result<Value, AzureError> {
@@ -105,11 +122,13 @@ pub async fn add_comment(
     let body = serde_json::json!({
         "text": text
     });
-    client.post(&path, &body).await
+    client.post(organization, project, &path, &body).await
 }
 
 pub async fn link_work_items(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     source_id: u32,
     target_id: u32,
     link_type: &str,
@@ -125,22 +144,28 @@ pub async fn link_work_items(
     }];
 
     let path = format!("wit/workitems/{}?api-version=7.1", source_id);
-    client.patch_patch(&path, &operations).await
+    client
+        .patch_patch(organization, project, &path, &operations)
+        .await
 }
 
 pub async fn query_work_items(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     query: &str,
 ) -> Result<Vec<WorkItem>, AzureError> {
     let wiql = WiqlQuery {
         query: query.to_string(),
     };
-    let response: WiqlResponse = client.post("wit/wiql?api-version=7.1", &wiql).await?;
+    let response: WiqlResponse = client
+        .post(organization, project, "wit/wiql?api-version=7.1", &wiql)
+        .await?;
 
     if response.work_items.is_empty() {
         return Ok(vec![]);
     }
 
     let ids: Vec<u32> = response.work_items.iter().map(|wi| wi.id).collect();
-    get_work_items(client, &ids).await
+    get_work_items(client, organization, project, &ids).await
 }
