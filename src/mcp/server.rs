@@ -436,7 +436,7 @@ impl AzureMcpServer {
 
     #[tool(description = "List all teams in the project")]
     async fn azure_devops_list_teams(&self) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: list_teams");
+        log::info!("Tool invoked: azure_devops_list_teams");
         let teams = boards::list_teams(&self.client)
             .await
             .map_err(|e| McpError {
@@ -455,7 +455,10 @@ impl AzureMcpServer {
         &self,
         args: Parameters<GetTeamArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: get_team(team_id={})", args.0.team_id);
+        log::info!(
+            "Tool invoked: azure_devops_get_team(team_id={})",
+            args.0.team_id
+        );
         let team = boards::get_team(&self.client, &args.0.team_id)
             .await
             .map_err(|e| McpError {
@@ -471,7 +474,7 @@ impl AzureMcpServer {
 
     #[tool(description = "List all work item types (Stories, Epics, Features, Bugs, etc.)")]
     async fn azure_devops_list_work_item_types(&self) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: list_work_item_types");
+        log::info!("Tool invoked: azure_devops_list_work_item_types");
         let types = boards::list_work_item_types(&self.client)
             .await
             .map_err(|e| McpError {
@@ -490,7 +493,10 @@ impl AzureMcpServer {
         &self,
         args: Parameters<ListBoardsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: list_boards(team_id={})", args.0.team_id);
+        log::info!(
+            "Tool invoked: azure_devops_list_boards(team_id={})",
+            args.0.team_id
+        );
         let boards = boards::list_boards(&self.client, &args.0.team_id)
             .await
             .map_err(|e| McpError {
@@ -510,7 +516,7 @@ impl AzureMcpServer {
         args: Parameters<GetBoardArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: get_board(team_id={}, board_id={})",
+            "Tool invoked: azure_devops_get_board(team_id={}, board_id={})",
             args.0.team_id,
             args.0.board_id
         );
@@ -532,7 +538,7 @@ impl AzureMcpServer {
         &self,
         args: Parameters<GetWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: get_work_item(id={})", args.0.id);
+        log::info!("Tool invoked: azure_devops_get_work_item(id={})", args.0.id);
         let work_item = work_items::get_work_item(&self.client, args.0.id as u32)
             .await
             .map_err(|e| McpError {
@@ -552,7 +558,7 @@ impl AzureMcpServer {
         args: Parameters<QueryWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: query_work_items_wiql(query={})",
+            "Tool invoked: azure_devops_query_work_items_wiql(query={})",
             args.0.query
         );
         let items = work_items::query_work_items(&self.client, &args.0.query)
@@ -580,7 +586,7 @@ impl AzureMcpServer {
         args: Parameters<CreateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: create_work_item(work_item_type={}, title={}, area_path={:?}, iteration={:?})",
+            "Tool invoked: azure_devops_create_work_item(work_item_type={}, title={}, area_path={:?}, iteration={:?})",
             args.0.work_item_type,
             args.0.title,
             args.0.area_path,
@@ -765,7 +771,7 @@ impl AzureMcpServer {
         args: Parameters<UploadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: upload_attachment(file_name={})",
+            "Tool invoked: azure_devops_upload_attachment(file_name={})",
             args.0.file_name
         );
         use base64::{Engine as _, engine::general_purpose};
@@ -797,7 +803,10 @@ impl AzureMcpServer {
         &self,
         args: Parameters<DownloadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: download_attachment(id={})", args.0.id);
+        log::info!(
+            "Tool invoked: azure_devops_download_attachment(id={})",
+            args.0.id
+        );
         use base64::{Engine as _, engine::general_purpose};
 
         let content = crate::azure::attachments::download_attachment(
@@ -828,7 +837,7 @@ impl AzureMcpServer {
         args: Parameters<GetBoardWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
+            "Tool invoked: azure_devops_query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
             args.0.area_path,
             args.0.iteration,
             args.0.include_board_column,
@@ -1038,7 +1047,7 @@ impl AzureMcpServer {
         args: Parameters<UpdateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: update_work_item(id={}, title={:?}, state={:?})",
+            "Tool invoked: azure_devops_update_work_item(id={}, title={:?}, state={:?})",
             args.0.id,
             args.0.title,
             args.0.state,
@@ -1185,7 +1194,7 @@ impl AzureMcpServer {
         args: Parameters<AddCommentArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: add_comment(work_item_id={}, text_length={})",
+            "Tool invoked: azure_devops_add_comment(work_item_id={}, text_length={})",
             args.0.work_item_id,
             args.0.text.len()
         );
@@ -1211,7 +1220,7 @@ impl AzureMcpServer {
         args: Parameters<LinkWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: link_work_items(source_id={}, target_id={}, link_type={})",
+            "Tool invoked: azure_devops_link_work_items(source_id={}, target_id={}, link_type={})",
             args.0.source_id,
             args.0.target_id,
             args.0.link_type
