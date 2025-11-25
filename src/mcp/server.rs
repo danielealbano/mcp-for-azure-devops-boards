@@ -159,7 +159,7 @@ struct GetWorkItemArgs {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct QueryWorkItemsArgs {
+struct QueryWorkItemsArgsWiql {
     /// Azure DevOps organization name
     organization: String,
     /// Azure DevOps project name
@@ -649,7 +649,7 @@ impl AzureMcpServer {
     #[tool(description = "Query work items using WIQL (Work Item Query Language)")]
     async fn azure_devops_query_work_items_wiql(
         &self,
-        args: Parameters<QueryWorkItemsArgs>,
+        args: Parameters<QueryWorkItemsArgsWiql>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
             "Tool invoked: azure_devops_query_work_items_wiql(query={})",
