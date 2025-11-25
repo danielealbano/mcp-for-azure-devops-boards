@@ -412,7 +412,7 @@ struct DownloadAttachmentArgs {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct GetBoardWorkItemsArgs {
+struct QueryWorkItemsArgs {
     /// Azure DevOps organization name
     organization: String,
     /// Azure DevOps project name
@@ -947,7 +947,7 @@ impl AzureMcpServer {
     )]
     async fn azure_devops_query_work_items(
         &self,
-        args: Parameters<GetBoardWorkItemsArgs>,
+        args: Parameters<QueryWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
             "Tool invoked: azure_devops_query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
