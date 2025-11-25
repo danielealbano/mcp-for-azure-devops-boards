@@ -9,15 +9,21 @@ pub struct AttachmentReference {
 
 pub async fn upload_attachment(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     file_name: &str,
     content: Vec<u8>,
 ) -> Result<AttachmentReference, AzureError> {
     let path = format!("wit/attachments?fileName={}&api-version=7.1", file_name);
-    client.post_binary(&path, content).await
+    client
+        .post_binary(organization, project, &path, content)
+        .await
 }
 
 pub async fn download_attachment(
     client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
     id: &str,
     file_name: Option<&str>,
 ) -> Result<Vec<u8>, AzureError> {
@@ -25,5 +31,5 @@ pub async fn download_attachment(
     if let Some(name) = file_name {
         path.push_str(&format!("&fileName={}", name));
     }
-    client.get_binary(&path).await
+    client.get_binary(organization, project, &path).await
 }
