@@ -132,8 +132,10 @@ The server exposes the following tools for MCP clients:
     -   **Optional Filters**: `area_path`, `iteration`, `created_date_from/to`, `modified_date_from/to`.
     -   **Inclusion Lists**: `include_board_column`, `include_board_row`, `include_work_item_type`, `include_state`, `include_assigned_to`, `include_tags`.
     -   **Exclusion Lists**: `exclude_board_column`, `exclude_board_row`, `exclude_work_item_type`, `exclude_state`, `exclude_assigned_to`, `exclude_tags`.
+    -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
 -   **`azure_devops_query_work_items_wiql`**: Execute a raw WIQL (Work Item Query Language) query.
     -   **Required**: `organization`, `project`, `query`
+    -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
 -   **`azure_devops_add_comment`**: Add a comment to a work item.
     -   **Required**: `organization`, `project`, `work_item_id`, `text`
 -   **`azure_devops_link_work_items`**: Create a relationship between two work items.
