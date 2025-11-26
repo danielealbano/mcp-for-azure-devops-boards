@@ -163,6 +163,19 @@ struct GetWorkItemArgs {
 }
 
 #[derive(Deserialize, JsonSchema)]
+struct GetWorkItemsArgs {
+    /// Azure DevOps organization name
+    organization: String,
+    /// Azure DevOps project name
+    project: String,
+    /// Work item IDs (comma-separated or array)
+    ids: Vec<i64>,
+    /// Include the latest N comments (optional). Set to -1 for all comments.
+    #[serde(default)]
+    include_latest_n_comments: Option<i32>,
+}
+
+#[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgsWiql {
     /// Azure DevOps organization name
     organization: String,
@@ -655,6 +668,46 @@ impl AzureMcpServer {
 
         // Convert to JSON value, simplify, then serialize
         let mut json_value = serde_json::to_value(&work_item).unwrap();
+        simplify_work_item_json(&mut json_value);
+
+        Ok(CallToolResult::success(vec![Content::text(
+            compact_llm::to_compact_string(&json_value).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "Get multiple work items by IDs")]
+    async fn azure_devops_get_work_items(
+        &self,
+        args: Parameters<GetWorkItemsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!(
+            "Tool invoked: azure_devops_get_work_items(ids={:?})",
+            args.0.ids
+        );
+
+        if args.0.ids.is_empty() {
+            return Ok(CallToolResult::success(vec![Content::text(
+                "[]".to_string(),
+            )]));
+        }
+
+        let ids: Vec<u32> = args.0.ids.iter().map(|&id| id as u32).collect();
+        let work_items = work_items::get_work_items(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &ids,
+            args.0.include_latest_n_comments,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
+
+        // Convert to JSON value, simplify, then serialize
+        let mut json_value = serde_json::to_value(&work_items).unwrap();
         simplify_work_item_json(&mut json_value);
 
         Ok(CallToolResult::success(vec![Content::text(
