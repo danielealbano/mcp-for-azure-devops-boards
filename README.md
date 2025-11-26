@@ -104,6 +104,13 @@ Add the following to your `claude_desktop_config.json`:
 
 The server exposes the following tools for MCP clients:
 
+#### Discovery
+
+-   **`azure_devops_list_organizations`**: List all Azure DevOps organizations the authenticated user has access to.
+    -   **Required**: None (uses authenticated user's credentials)
+-   **`azure_devops_list_projects`**: List all projects in an Azure DevOps organization.
+    -   **Required**: `organization`
+
 #### Work Items
 
 > **Note**: All work item tools require `organization` and `project` parameters.
@@ -116,6 +123,10 @@ The server exposes the following tools for MCP clients:
     -   **Optional**: All fields available in creation.
 -   **`azure_devops_get_work_item`**: Get details of a specific work item.
     -   **Required**: `organization`, `project`, `id`
+    -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
+-   **`azure_devops_get_work_items`**: Get multiple work items by their IDs.
+    -   **Required**: `organization`, `project`, `ids` (array of work item IDs)
+    -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
 -   **`azure_devops_query_work_items`**: Query work items using structured filters.
     -   **Required**: `organization`, `project`
     -   **Optional Filters**: `area_path`, `iteration`, `created_date_from/to`, `modified_date_from/to`.
