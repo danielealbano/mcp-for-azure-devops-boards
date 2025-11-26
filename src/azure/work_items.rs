@@ -69,22 +69,26 @@ pub async fn get_comments(
             path.push_str(&format!("&continuationToken={}", token));
         }
 
-        let response: CommentListResponse = client.get(organization, project, &path).await?;
-        all_comments.extend(response.value);
+        let (response, headers): (CommentListResponse, _) = client
+            .get_with_headers(organization, project, &path)
+            .await?;
 
-        if let Some(token) = response.continuation_token {
-            continuation_token = Some(token);
-        } else {
+        all_comments.extend(response.comments);
+
+        // Extract continuation token from headers
+        continuation_token = headers
+            .get("x-ms-continuationtoken")
+            .and_then(|v| v.to_str().ok())
+            .map(|s| s.to_string());
+
+        // Break if no continuation token or if we've fetched enough comments
+        if continuation_token.is_none() {
             break;
         }
 
         if n != -1 && all_comments.len() >= n as usize {
             break;
         }
-    }
-
-    if n != -1 && all_comments.len() > n as usize {
-        all_comments.truncate(n as usize);
     }
 
     Ok(all_comments)
