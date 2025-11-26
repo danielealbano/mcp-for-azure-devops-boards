@@ -14,6 +14,18 @@ use rmcp::{
 use serde_json::Value;
 use std::sync::Arc;
 
+/// Custom deserializer for non-empty strings
+fn deserialize_non_empty_string<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    if s.trim().is_empty() {
+        return Err(serde::de::Error::custom("field cannot be empty"));
+    }
+    Ok(s)
+}
+
 /// Recursively simplifies the JSON output to reduce token usage for LLMs.
 /// It removes "_links", "url", "descriptor", "imageUrl", "avatar" and simplifies field names.
 fn simplify_work_item_json(value: &mut Value) {
@@ -103,9 +115,11 @@ pub struct AzureMcpServer {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetBoardArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
     team_id: String,
@@ -115,9 +129,11 @@ struct GetBoardArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListBoardsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
     team_id: String,
@@ -125,9 +141,11 @@ struct ListBoardsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListTeamsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 }
 
@@ -138,23 +156,28 @@ struct ListOrganizationsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListProjectsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct ListWorkItemTypesArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct GetTeamArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
     team_id: String,
@@ -162,9 +185,11 @@ struct GetTeamArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetWorkItemArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID
     id: i64,
@@ -175,9 +200,11 @@ struct GetWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetWorkItemsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item IDs (comma-separated or array)
     ids: Vec<i64>,
@@ -188,9 +215,11 @@ struct GetWorkItemsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgsWiql {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// WIQL query string (e.g., "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'")
     query: String,
@@ -201,9 +230,11 @@ struct QueryWorkItemsArgsWiql {
 
 #[derive(Deserialize, JsonSchema)]
 struct CreateWorkItemArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 
     // Required fields
@@ -304,9 +335,11 @@ struct CreateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UpdateWorkItemArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID to update
     id: u32,
@@ -394,9 +427,11 @@ struct UpdateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct AddCommentArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID to add comment to
     work_item_id: u32,
@@ -406,9 +441,11 @@ struct AddCommentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct LinkWorkItemsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Source work item ID
     source_id: u32,
@@ -420,9 +457,11 @@ struct LinkWorkItemsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UploadAttachmentArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// File name with extension
     file_name: String,
@@ -432,9 +471,11 @@ struct UploadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct DownloadAttachmentArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Attachment ID (GUID)
     id: String,
@@ -444,9 +485,11 @@ struct DownloadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgs {
-    /// Azure DevOps organization name
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 
     /// Area path to filter by (e.g., "MyProject\\Team1"). Uses UNDER operator to include child paths.
