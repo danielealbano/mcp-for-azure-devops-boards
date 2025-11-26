@@ -23,7 +23,7 @@ where
     if s.trim().is_empty() {
         return Err(serde::de::Error::custom("field cannot be empty"));
     }
-    Ok(s)
+    Ok(s.trim().to_string())
 }
 
 /// Recursively simplifies the JSON output to reduce token usage for LLMs.
