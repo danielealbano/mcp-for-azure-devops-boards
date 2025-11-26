@@ -1577,7 +1577,7 @@ impl rmcp::ServerHandler for AzureMcpServer {
         ServerInfo {
             server_info: Implementation {
                 name: "azure-devops-boards-mcp-rust".into(),
-                version: "0.1.0".into(),
+                version: "0.3.0".into(),
                 icons: None,
                 title: None,
                 website_url: None,
