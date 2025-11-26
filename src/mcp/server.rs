@@ -156,6 +156,9 @@ struct GetWorkItemArgs {
     project: String,
     /// Work item ID
     id: i64,
+    /// Include the latest N comments (optional). Set to -1 for all comments.
+    #[serde(default)]
+    include_latest_n_comments: Option<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -166,6 +169,9 @@ struct QueryWorkItemsArgsWiql {
     project: String,
     /// WIQL query string (e.g., "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'")
     query: String,
+    /// Include the latest N comments (optional). Set to -1 for all comments.
+    #[serde(default)]
+    include_latest_n_comments: Option<i32>,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -489,6 +495,10 @@ struct QueryWorkItemsArgs {
     /// Tags to exclude (e.g., ["wontfix"])
     #[serde(default)]
     exclude_tags: Vec<String>,
+
+    /// Include the latest N comments (optional). Set to -1 for all comments.
+    #[serde(default)]
+    include_latest_n_comments: Option<i32>,
 }
 
 #[tool_router]
@@ -633,6 +643,7 @@ impl AzureMcpServer {
             &args.0.organization,
             &args.0.project,
             args.0.id as u32,
+            args.0.include_latest_n_comments,
         )
         .await
         .map_err(|e| McpError {
@@ -660,6 +671,7 @@ impl AzureMcpServer {
             &args.0.organization,
             &args.0.project,
             &args.0.query,
+            args.0.include_latest_n_comments,
         )
         .await
         .map_err(|e| McpError {
@@ -1142,6 +1154,7 @@ impl AzureMcpServer {
             &args.0.organization,
             &args.0.project,
             &query,
+            args.0.include_latest_n_comments,
         )
         .await
         .map_err(|e| McpError {

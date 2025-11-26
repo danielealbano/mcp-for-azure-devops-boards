@@ -25,6 +25,26 @@ pub struct WorkItem {
     pub id: u32,
     pub fields: HashMap<String, serde_json::Value>,
     pub url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub comments: Option<Vec<Comment>>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CommentListResponse {
+    pub count: u32,
+    pub value: Vec<Comment>,
+    #[serde(rename = "continuationToken")]
+    pub continuation_token: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Comment {
+    pub id: u32,
+    pub text: String,
+    #[serde(rename = "createdDate")]
+    pub created_date: String,
+    #[serde(rename = "createdBy")]
+    pub created_by: serde_json::Value,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
