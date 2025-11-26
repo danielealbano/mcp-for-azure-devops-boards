@@ -1,5 +1,5 @@
 use crate::azure::client::AzureDevOpsClient;
-use crate::azure::{boards, work_items};
+use crate::azure::{boards, organizations, projects, work_items};
 use crate::compact_llm;
 use rmcp::{
     ErrorData as McpError,
@@ -129,6 +129,17 @@ struct ListTeamsArgs {
     organization: String,
     /// Azure DevOps project name
     project: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListOrganizationsArgs {
+    // No parameters needed - lists all organizations for the authenticated user
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListProjectsArgs {
+    /// Azure DevOps organization name
+    organization: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -540,6 +551,57 @@ impl AzureMcpServer {
 
         Ok(CallToolResult::success(vec![Content::text(
             compact_llm::to_compact_string(&teams).unwrap(),
+        )]))
+    }
+
+    #[tool(
+        description = "List all Azure DevOps organizations the authenticated user has access to"
+    )]
+    async fn azure_devops_list_organizations(
+        &self,
+        _args: Parameters<ListOrganizationsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!("Tool invoked: azure_devops_list_organizations");
+
+        // First, get the user's profile to obtain their member ID
+        let profile = organizations::get_profile(&self.client)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: format!("Failed to get user profile: {}", e).into(),
+                data: None,
+            })?;
+
+        // Then, list all organizations for this member ID
+        let orgs = organizations::list_organizations(&self.client, &profile.id)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            compact_llm::to_compact_string(&orgs).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "List all projects in an Azure DevOps organization")]
+    async fn azure_devops_list_projects(
+        &self,
+        args: Parameters<ListProjectsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!("Tool invoked: azure_devops_list_projects");
+        let projects = projects::list_projects(&self.client, &args.0.organization)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
+
+        Ok(CallToolResult::success(vec![Content::text(
+            compact_llm::to_compact_string(&projects).unwrap(),
         )]))
     }
 

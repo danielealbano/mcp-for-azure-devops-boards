@@ -139,6 +139,52 @@ impl AzureDevOpsClient {
         Ok(data)
     }
 
+    /// Make a request to the VSSPS API (Visual Studio Services Platform Services)
+    /// URL format: https://app.vssps.visualstudio.com/_apis/{path}
+    pub async fn vssps_request<T: DeserializeOwned>(
+        &self,
+        method: Method,
+        path: &str,
+        body: Option<&(impl Serialize + ?Sized)>,
+    ) -> Result<T, AzureError> {
+        let token = self.get_token().await?;
+        let url = format!("https://app.vssps.visualstudio.com/_apis/{}", path);
+
+        log::debug!("VSSPS Request: {} {}", method, url);
+        if let Some(b) = &body
+            && let Ok(json) = serde_json::to_string_pretty(b)
+        {
+            log::debug!("Request body: {}", json);
+        }
+
+        let mut request = self
+            .client
+            .request(method, &url)
+            .bearer_auth(token)
+            .header("Content-Type", "application/json");
+
+        if let Some(b) = body {
+            request = request.json(b);
+        }
+
+        let response = request.send().await?;
+        let status = response.status();
+
+        log::debug!("Response status: {}", status);
+
+        if !response.status().is_success() {
+            let error_text = response.text().await?;
+            log::debug!("Error response: {}", error_text);
+            return Err(AzureError::ApiError(error_text));
+        }
+
+        let response_text = response.text().await?;
+        log::debug!("Response body: {}", response_text);
+
+        let data = serde_json::from_str(&response_text)?;
+        Ok(data)
+    }
+
     /// Make a request at the team level (team-scoped)
     /// URL format: https://dev.azure.com/{organization}/{project}/{team}/_apis/{path}
     pub async fn team_request<T: DeserializeOwned>(
