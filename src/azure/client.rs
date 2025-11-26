@@ -220,6 +220,46 @@ impl AzureDevOpsClient {
             .await
     }
 
+    /// GET request that returns both the response body and headers
+    pub async fn get_with_headers<T: DeserializeOwned>(
+        &self,
+        organization: &str,
+        project: &str,
+        path: &str,
+    ) -> Result<(T, reqwest::header::HeaderMap), AzureError> {
+        let token = self.get_token().await?;
+        let url = format!(
+            "https://dev.azure.com/{}/{}/_apis/{}",
+            organization, project, path
+        );
+
+        log::debug!("Request: GET {}", url);
+
+        let request = self
+            .client
+            .get(&url)
+            .bearer_auth(token)
+            .header("Content-Type", "application/json");
+
+        let response = request.send().await?;
+        let status = response.status();
+        let headers = response.headers().clone();
+
+        log::debug!("Response status: {}", status);
+
+        if !status.is_success() {
+            let error_text = response.text().await?;
+            log::debug!("Error response: {}", error_text);
+            return Err(AzureError::ApiError(error_text));
+        }
+
+        let response_text = response.text().await?;
+        log::debug!("Response body: {}", response_text);
+
+        let data = serde_json::from_str(&response_text)?;
+        Ok((data, headers))
+    }
+
     pub async fn post<T: DeserializeOwned>(
         &self,
         organization: &str,
