@@ -44,6 +44,11 @@ pub async fn get_comments(
     work_item_id: u32,
     n: i32,
 ) -> Result<Vec<Comment>, AzureError> {
+    // Early return for n=0 case
+    if n == 0 {
+        return Ok(Vec::new());
+    }
+
     let mut all_comments = Vec::new();
     let mut continuation_token: Option<String> = None;
 
