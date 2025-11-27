@@ -1,7 +1,7 @@
-use azure_devops_boards_mcp_rust::azure::client::AzureDevOpsClient;
-use azure_devops_boards_mcp_rust::mcp::server::AzureMcpServer;
-use azure_devops_boards_mcp_rust::server::http;
 use clap::Parser;
+use mcp_for_azure_devops_boards::azure::client::AzureDevOpsClient;
+use mcp_for_azure_devops_boards::mcp::server::AzureMcpServer;
+use mcp_for_azure_devops_boards::server::http;
 use rmcp::ServiceExt;
 use rmcp::transport::stdio;
 

@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug executable 'azure-devops-boards-mcp-rust'",
+            "name": "Debug executable 'mcp-for-azure-devops-boards'",
             "type": "lldb",
             "request": "launch",
             "cargo": {
                 "args": [
                     "run",
-                    "--bin=azure-devops-boards-mcp-rust"
+                    "--bin=mcp-for-azure-devops-boards"
                 ]
             },
             "env": {
