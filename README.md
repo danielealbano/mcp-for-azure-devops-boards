@@ -1,7 +1,7 @@
 # MCP for Azure DevOps Boards
 
-[![CI - PR - Build & Test](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/ci-pr-build-and-test.yml/badge.svg)](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/ci-pr-build-and-test.yml)
-[![CD - Tag - Build & Release](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/cd-tag-build-and-release.yml/badge.svg)](https://github.com/danielealbano/azure-devops-boards-mcp-rust/actions/workflows/cd-tag-build-and-release.yml)
+[![CI - PR - Build & Test](https://github.com/danielealbano/mcp-for-azure-devops-boards/actions/workflows/ci-pr-build-and-test.yml/badge.svg)](https://github.com/danielealbano/mcp-for-azure-devops-boards/actions/workflows/ci-pr-build-and-test.yml)
+[![CD - Tag - Build & Release](https://github.com/danielealbano/mcp-for-azure-devops-boards/actions/workflows/cd-tag-build-and-release.yml/badge.svg)](https://github.com/danielealbano/mcp-for-azure-devops-boards/actions/workflows/cd-tag-build-and-release.yml)
 
 A Model Context Protocol (MCP) server for interacting with Azure DevOps Boards and Work Items, written in Rust.
 
@@ -187,8 +187,8 @@ We welcome contributions!
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/danielealbano/azure-devops-boards-mcp-rust.git
-    cd azure-devops-boards-mcp-rust
+    git clone https://github.com/danielealbano/mcp-for-azure-devops-boards.git
+    cd mcp-for-azure-devops-boards
     ```
 
 2.  Build the project:
