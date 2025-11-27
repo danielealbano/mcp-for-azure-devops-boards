@@ -43,23 +43,23 @@ jobs:
       - name: Prepare binary (Unix)
         if: runner.os != 'Windows'
         run: |
-          cp target/release/azure-devops-boards-mcp-rust \
-             azure-devops-boards-mcp-rust-${{ matrix.name }}
+          cp target/release/mcp-for-azure-devops-boards \
+             mcp-for-azure-devops-boards-${{ matrix.name }}
 
       - name: Prepare binary (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Copy-Item `
-            "target/release/azure-devops-boards-mcp-rust.exe" `
-            "azure-devops-boards-mcp-rust-${{ matrix.name }}.exe"
+            "target/release/mcp-for-azure-devops-boards.exe" `
+            "mcp-for-azure-devops-boards-${{ matrix.name }}.exe"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: azure-devops-boards-mcp-rust-${{ matrix.name }}
+          name: mcp-for-azure-devops-boards-${{ matrix.name }}
           path: |
-            azure-devops-boards-mcp-rust-${{ matrix.name }}*
+            mcp-for-azure-devops-boards-${{ matrix.name }}*
 
   release:
     name: Create draft GitHub Release
@@ -80,20 +80,20 @@ jobs:
           set -eux
           TAG="${GITHUB_REF_NAME}"
           # artifact directory is dist/<artifact-name>/...
-          MAC_DIR="dist/azure-devops-boards-mcp-rust-macos-aarch64"
-          cp "${MAC_DIR}/azure-devops-boards-mcp-rust-macos-aarch64" azure-devops-boards-mcp-rust
-          tar czf "azure-devops-boards-mcp-rust-${TAG}-macos-aarch64.tar.gz" azure-devops-boards-mcp-rust
-          ls -l "azure-devops-boards-mcp-rust-${TAG}-macos-aarch64.tar.gz"
+          MAC_DIR="dist/mcp-for-azure-devops-boards-macos-aarch64"
+          cp "${MAC_DIR}/mcp-for-azure-devops-boards-macos-aarch64" mcp-for-azure-devops-boards
+          tar czf "mcp-for-azure-devops-boards-${TAG}-macos-aarch64.tar.gz" mcp-for-azure-devops-boards
+          ls -l "mcp-for-azure-devops-boards-${TAG}-macos-aarch64.tar.gz"
 
       - name: Prepare Windows zip
         run: |
           set -eux
           TAG="${GITHUB_REF_NAME}"
-          WIN_DIR="dist/azure-devops-boards-mcp-rust-windows-x86_64"
+          WIN_DIR="dist/mcp-for-azure-devops-boards-windows-x86_64"
           # Normalize name inside zip:
-          cp "${WIN_DIR}/azure-devops-boards-mcp-rust-windows-x86_64.exe" azure-devops-boards-mcp-rust.exe
-          zip "azure-devops-boards-mcp-rust-${TAG}-windows-x86_64.zip" azure-devops-boards-mcp-rust.exe
-          ls -l "azure-devops-boards-mcp-rust-${TAG}-windows-x86_64.zip"
+          cp "${WIN_DIR}/mcp-for-azure-devops-boards-windows-x86_64.exe" mcp-for-azure-devops-boards.exe
+          zip "mcp-for-azure-devops-boards-${TAG}-windows-x86_64.zip" mcp-for-azure-devops-boards.exe
+          ls -l "mcp-for-azure-devops-boards-${TAG}-windows-x86_64.zip"
 
       - name: Create draft release
         uses: softprops/action-gh-release@v2
@@ -105,7 +105,7 @@ jobs:
           name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
-            azure-devops-boards-mcp-rust-${{ github.ref_name }}-macos-aarch64.tar.gz
-            azure-devops-boards-mcp-rust-${{ github.ref_name }}-windows-x86_64.zip
+            mcp-for-azure-devops-boards-${{ github.ref_name }}-macos-aarch64.tar.gz
+            mcp-for-azure-devops-boards-${{ github.ref_name }}-windows-x86_64.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
