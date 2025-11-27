@@ -122,33 +122,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
-name = "azure-devops-boards-mcp-rust"
-version = "0.3.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "azure_core",
- "azure_identity",
- "base64 0.22.1",
- "clap",
- "dotenv",
- "env_logger",
- "hyper 1.8.1",
- "hyper-util",
- "log",
- "mockall",
- "reqwest",
- "rmcp",
- "rmcp-macros",
- "schemars 0.8.22",
- "serde",
- "serde_json",
- "thiserror 1.0.69",
- "tokio",
- "tower",
-]
-
-[[package]]
 name = "azure_core"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1193,6 +1166,33 @@ name = "log"
 version = "0.4.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
+
+[[package]]
+name = "mcp-for-azure-devops-boards"
+version = "0.3.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "azure_core",
+ "azure_identity",
+ "base64 0.22.1",
+ "clap",
+ "dotenv",
+ "env_logger",
+ "hyper 1.8.1",
+ "hyper-util",
+ "log",
+ "mockall",
+ "reqwest",
+ "rmcp",
+ "rmcp-macros",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "thiserror 1.0.69",
+ "tokio",
+ "tower",
+]
 
 [[package]]
 name = "memchr"
