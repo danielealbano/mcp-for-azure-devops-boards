@@ -749,8 +749,11 @@ impl AzureMcpServer {
             data: None,
         })?;
 
+        // Extract just the board names for compact response
+        let board_names: Vec<String> = boards.into_iter().map(|board| board.name).collect();
+
         Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&boards).unwrap(),
+            compact_llm::to_compact_string(&board_names).unwrap(),
         )]))
     }
 
