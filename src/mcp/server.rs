@@ -690,8 +690,11 @@ impl AzureMcpServer {
                     data: None,
                 })?;
 
+        // Extract just the work item type names for compact response
+        let type_names: Vec<String> = types.into_iter().map(|wit| wit.name).collect();
+
         Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&types).unwrap(),
+            compact_llm::to_compact_string(&type_names).unwrap(),
         )]))
     }
 
