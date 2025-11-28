@@ -602,8 +602,11 @@ impl AzureMcpServer {
                 data: None,
             })?;
 
+        // Extract just the team names for compact response
+        let team_names: Vec<String> = teams.into_iter().map(|team| team.name).collect();
+
         Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&teams).unwrap(),
+            compact_llm::to_compact_string(&team_names).unwrap(),
         )]))
     }
 
