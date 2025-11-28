@@ -23,10 +23,16 @@ pub struct ProjectListResponse {
 pub async fn list_projects(
     client: &AzureDevOpsClient,
     organization: &str,
-) -> Result<Vec<Project>, AzureError> {
+) -> Result<Vec<String>, AzureError> {
     let path = "projects?api-version=7.1";
     let response: ProjectListResponse = client
         .org_request(organization, Method::GET, path, None::<&String>)
         .await?;
-    Ok(response.value)
+
+    // Extract just the project names
+    Ok(response
+        .value
+        .into_iter()
+        .map(|project| project.name)
+        .collect())
 }
