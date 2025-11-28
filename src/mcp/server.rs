@@ -637,8 +637,11 @@ impl AzureMcpServer {
                 data: None,
             })?;
 
+        // Extract just the organization names for compact response
+        let org_names: Vec<String> = orgs.into_iter().map(|org| org.account_name).collect();
+
         Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&orgs).unwrap(),
+            compact_llm::to_compact_string(&org_names).unwrap(),
         )]))
     }
 
@@ -656,8 +659,11 @@ impl AzureMcpServer {
                 data: None,
             })?;
 
+        // Extract just the project names for compact response
+        let project_names: Vec<String> = projects.into_iter().map(|project| project.name).collect();
+
         Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&projects).unwrap(),
+            compact_llm::to_compact_string(&project_names).unwrap(),
         )]))
     }
 
