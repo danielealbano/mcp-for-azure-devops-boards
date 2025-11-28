@@ -1,5 +1,5 @@
 use crate::azure::client::AzureDevOpsClient;
-use crate::azure::{boards, organizations, projects, work_items};
+use crate::azure::{boards, organizations, projects, tags, work_items};
 use crate::compact_llm;
 use rmcp::{
     ErrorData as McpError,
@@ -163,6 +163,16 @@ struct ListProjectsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListWorkItemTypesArgs {
+    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    organization: String,
+    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    project: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListTagsArgs {
     /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
@@ -692,6 +702,28 @@ impl AzureMcpServer {
 
         Ok(CallToolResult::success(vec![Content::text(
             compact_llm::to_compact_string(&types).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "List all tags in use in the project")]
+    async fn azure_devops_list_tags(
+        &self,
+        args: Parameters<ListTagsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!("Tool invoked: azure_devops_list_tags");
+        let tags = tags::list_tags(&self.client, &args.0.organization, &args.0.project)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
+
+        // Extract just the tag names for compact response
+        let tag_names: Vec<String> = tags.into_iter().map(|tag| tag.name).collect();
+
+        Ok(CallToolResult::success(vec![Content::text(
+            compact_llm::to_compact_string(&tag_names).unwrap(),
         )]))
     }
 

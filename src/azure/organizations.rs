@@ -40,10 +40,16 @@ pub async fn get_profile(client: &AzureDevOpsClient) -> Result<Profile, AzureErr
 pub async fn list_organizations(
     client: &AzureDevOpsClient,
     member_id: &str,
-) -> Result<Vec<Organization>, AzureError> {
+) -> Result<Vec<String>, AzureError> {
     let path = format!("accounts?memberId={}&api-version=7.1", member_id);
     let response: OrganizationListResponse = client
         .vssps_request(Method::GET, &path, None::<&String>)
         .await?;
-    Ok(response.value)
+
+    // Extract just the organization names
+    Ok(response
+        .value
+        .into_iter()
+        .map(|org| org.account_name)
+        .collect())
 }
