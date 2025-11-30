@@ -50,14 +50,14 @@ fn simplify_work_item_json(value: &mut Value) {
             map.remove("avatar");
 
             // Process "fields" if present (specific to Work Items)
-            if let Some(Value::Object(fields_map)) = map.remove("fields") {
+            if let Some(Value::Object(mut fields_map)) = map.remove("fields") {
                 let mut simplified_fields = serde_json::Map::new();
 
                 // Collect keys to process
                 let keys: Vec<String> = fields_map.keys().cloned().collect();
 
                 for key in keys {
-                    if let Some(mut val) = fields_map.get(&key).cloned() {
+                    if let Some(mut val) = fields_map.remove(&key) {
                         // Simplify Identity fields (objects with displayName, uniqueName, etc.)
                         if let Value::Object(ref obj) = val
                             && let Some(Value::String(name)) = obj.get("displayName")
