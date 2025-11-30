@@ -330,10 +330,10 @@ pub struct AzureMcpServer {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetBoardArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
@@ -344,10 +344,10 @@ struct GetBoardArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListBoardsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
@@ -356,10 +356,10 @@ struct ListBoardsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListTeamsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 }
@@ -371,37 +371,37 @@ struct ListOrganizationsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct ListProjectsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct ListWorkItemTypesArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct ListTagsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
 struct GetTeamArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Team ID or name
@@ -410,10 +410,10 @@ struct GetTeamArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetWorkItemArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID
@@ -425,10 +425,10 @@ struct GetWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct GetWorkItemsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item IDs (comma-separated or array)
@@ -440,10 +440,10 @@ struct GetWorkItemsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgsWiql {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// WIQL query string (e.g., "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'Active'")
@@ -455,10 +455,10 @@ struct QueryWorkItemsArgsWiql {
 
 #[derive(Deserialize, JsonSchema)]
 struct CreateWorkItemArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 
@@ -560,10 +560,10 @@ struct CreateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UpdateWorkItemArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID to update
@@ -652,10 +652,10 @@ struct UpdateWorkItemArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct AddCommentArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Work item ID to add comment to
@@ -666,10 +666,10 @@ struct AddCommentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct LinkWorkItemsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Source work item ID
@@ -682,10 +682,10 @@ struct LinkWorkItemsArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct UploadAttachmentArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// File name with extension
@@ -696,10 +696,10 @@ struct UploadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct DownloadAttachmentArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
     /// Attachment ID (GUID)
@@ -710,10 +710,10 @@ struct DownloadAttachmentArgs {
 
 #[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgs {
-    /// Azure DevOps organization name (required, non-empty). Use azure_devops_list_organizations to get available organizations.
+    /// Azure DevOps organization name (required, non-empty). Use azdo_list_organizations to get available organizations.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     organization: String,
-    /// Azure DevOps project name (required, non-empty). Use azure_devops_list_projects to get available projects.
+    /// Azure DevOps project name (required, non-empty). Use azdo_list_projects to get available projects.
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     project: String,
 
@@ -804,11 +804,11 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all teams in the project")]
-    async fn azure_devops_list_teams(
+    async fn azdo_list_teams(
         &self,
         args: Parameters<ListTeamsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_list_teams");
+        log::info!("Tool invoked: azdo_list_teams");
         let teams = boards::list_teams(&self.client, &args.0.organization, &args.0.project)
             .await
             .map_err(|e| McpError {
@@ -828,11 +828,11 @@ impl AzureMcpServer {
     #[tool(
         description = "List all Azure DevOps organizations the authenticated user has access to"
     )]
-    async fn azure_devops_list_organizations(
+    async fn azdo_list_organizations(
         &self,
         _args: Parameters<ListOrganizationsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_list_organizations");
+        log::info!("Tool invoked: azdo_list_organizations");
 
         // First, get the user's profile to obtain their member ID
         let profile = organizations::get_profile(&self.client)
@@ -861,11 +861,11 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all projects in an Azure DevOps organization")]
-    async fn azure_devops_list_projects(
+    async fn azdo_list_projects(
         &self,
         args: Parameters<ListProjectsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_list_projects");
+        log::info!("Tool invoked: azdo_list_projects");
         let projects = projects::list_projects(&self.client, &args.0.organization)
             .await
             .map_err(|e| McpError {
@@ -883,12 +883,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get details of a specific team")]
-    async fn azure_devops_get_team(
+    async fn azdo_get_team(
         &self,
         args: Parameters<GetTeamArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_get_team(team_id={})",
+            "Tool invoked: azdo_get_team(team_id={})",
             args.0.team_id
         );
         let team = boards::get_team(
@@ -910,11 +910,11 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all work item types (Stories, Epics, Features, Bugs, etc.)")]
-    async fn azure_devops_list_work_item_types(
+    async fn azdo_list_work_item_types(
         &self,
         args: Parameters<ListWorkItemTypesArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_list_work_item_types");
+        log::info!("Tool invoked: azdo_list_work_item_types");
         let types =
             boards::list_work_item_types(&self.client, &args.0.organization, &args.0.project)
                 .await
@@ -933,11 +933,11 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List all tags in use in the project")]
-    async fn azure_devops_list_tags(
+    async fn azdo_list_tags(
         &self,
         args: Parameters<ListTagsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_list_tags");
+        log::info!("Tool invoked: azdo_list_tags");
         let tags = tags::list_tags(&self.client, &args.0.organization, &args.0.project)
             .await
             .map_err(|e| McpError {
@@ -955,12 +955,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List boards for a specific team (requires team_id)")]
-    async fn azure_devops_list_boards(
+    async fn azdo_list_boards(
         &self,
         args: Parameters<ListBoardsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_list_boards(team_id={})",
+            "Tool invoked: azdo_list_boards(team_id={})",
             args.0.team_id
         );
         let boards = boards::list_boards(
@@ -985,12 +985,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get details of a specific board (requires team_id)")]
-    async fn azure_devops_get_board(
+    async fn azdo_get_board(
         &self,
         args: Parameters<GetBoardArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_get_board(team_id={}, board_id={})",
+            "Tool invoked: azdo_get_board(team_id={}, board_id={})",
             args.0.team_id,
             args.0.board_id
         );
@@ -1014,11 +1014,11 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get a work item by ID")]
-    async fn azure_devops_get_work_item(
+    async fn azdo_get_work_item(
         &self,
         args: Parameters<GetWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azure_devops_get_work_item(id={})", args.0.id);
+        log::info!("Tool invoked: azdo_get_work_item(id={})", args.0.id);
         let work_item = work_items::get_work_item(
             &self.client,
             &args.0.organization,
@@ -1046,12 +1046,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get multiple work items by IDs")]
-    async fn azure_devops_get_work_items(
+    async fn azdo_get_work_items(
         &self,
         args: Parameters<GetWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_get_work_items(ids={:?})",
+            "Tool invoked: azdo_get_work_items(ids={:?})",
             args.0.ids
         );
 
@@ -1089,12 +1089,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Query work items using WIQL (Work Item Query Language)")]
-    async fn azure_devops_query_work_items_wiql(
+    async fn azdo_query_work_items_wiql(
         &self,
         args: Parameters<QueryWorkItemsArgsWiql>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_query_work_items_wiql(query={})",
+            "Tool invoked: azdo_query_work_items_wiql(query={})",
             args.0.query
         );
         let items = work_items::query_work_items(
@@ -1126,12 +1126,12 @@ impl AzureMcpServer {
     #[tool(
         description = "Create a new work item with comprehensive field support (type, title, description, area path, iteration, priority, tags, parent relationships, etc.)"
     )]
-    async fn azure_devops_create_work_item(
+    async fn azdo_create_work_item(
         &self,
         args: Parameters<CreateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_create_work_item(work_item_type={}, title={}, area_path={:?}, iteration={:?})",
+            "Tool invoked: azdo_create_work_item(work_item_type={}, title={}, area_path={:?}, iteration={:?})",
             args.0.work_item_type,
             args.0.title,
             args.0.area_path,
@@ -1322,12 +1322,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Upload an attachment to Azure DevOps")]
-    async fn azure_devops_upload_attachment(
+    async fn azdo_upload_attachment(
         &self,
         args: Parameters<UploadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_upload_attachment(file_name={})",
+            "Tool invoked: azdo_upload_attachment(file_name={})",
             args.0.file_name
         );
         use base64::{Engine as _, engine::general_purpose};
@@ -1360,12 +1360,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Download an attachment from Azure DevOps")]
-    async fn azure_devops_download_attachment(
+    async fn azdo_download_attachment(
         &self,
         args: Parameters<DownloadAttachmentArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_download_attachment(id={})",
+            "Tool invoked: azdo_download_attachment(id={})",
             args.0.id
         );
         use base64::{Engine as _, engine::general_purpose};
@@ -1395,12 +1395,12 @@ impl AzureMcpServer {
     #[tool(
         description = "Query work items using field filters (area path, iteration, dates, board columns/rows, work item types, states, tags, assigned to). Supports both include and exclude filters."
     )]
-    async fn azure_devops_query_work_items(
+    async fn azdo_query_work_items(
         &self,
         args: Parameters<QueryWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
+            "Tool invoked: azdo_query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
             args.0.area_path,
             args.0.iteration,
             args.0.include_board_column,
@@ -1614,12 +1614,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Update an existing work item with comprehensive field support")]
-    async fn azure_devops_update_work_item(
+    async fn azdo_update_work_item(
         &self,
         args: Parameters<UpdateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_update_work_item(id={}, title={:?}, state={:?})",
+            "Tool invoked: azdo_update_work_item(id={}, title={:?}, state={:?})",
             args.0.id,
             args.0.title,
             args.0.state,
@@ -1771,12 +1771,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Add a comment to a work item")]
-    async fn azure_devops_add_comment(
+    async fn azdo_add_comment(
         &self,
         args: Parameters<AddCommentArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_add_comment(work_item_id={}, text_length={})",
+            "Tool invoked: azdo_add_comment(work_item_id={}, text_length={})",
             args.0.work_item_id,
             args.0.text.len()
         );
@@ -1803,12 +1803,12 @@ impl AzureMcpServer {
     #[tool(
         description = "Create a link between two work items (Parent, Child, Related, Duplicate, Dependency)"
     )]
-    async fn azure_devops_link_work_items(
+    async fn azdo_link_work_items(
         &self,
         args: Parameters<LinkWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azure_devops_link_work_items(source_id={}, target_id={}, link_type={})",
+            "Tool invoked: azdo_link_work_items(source_id={}, target_id={}, link_type={})",
             args.0.source_id,
             args.0.target_id,
             args.0.link_type
