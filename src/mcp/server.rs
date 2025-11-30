@@ -506,7 +506,7 @@ struct CreateWorkItemArgs {
     #[serde(default)]
     area_path: Option<String>,
 
-    /// Iteration path (e.g., "MyProject\\Sprint 1")
+    /// Iteration path (e.g., "MyProject\\Sprint 1"), use azdo_team_get_current_iteration to get the current iteration
     #[serde(default)]
     iteration: Option<String>,
 
