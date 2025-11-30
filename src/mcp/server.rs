@@ -1,6 +1,7 @@
 use crate::azure::client::AzureDevOpsClient;
 use crate::azure::{boards, organizations, projects, tags, work_items};
 use crate::compact_llm;
+use regex::Regex;
 use rmcp::{
     ErrorData as McpError,
     handler::server::router::tool::ToolRouter,
@@ -123,9 +124,43 @@ fn simplify_work_item_json(value: &mut Value) {
                         ) {
                             if let Value::String(html_content) = &val {
                                 // Convert HTML to plain text, width doesn't matter as we don't need wrapping
-                                if let Ok(plain_text) =
+                                if let Ok(mut plain_text) =
                                     html2text::from_read(html_content.as_bytes(), usize::MAX)
                                 {
+                                    // Normalize newlines: replace \r with \n
+                                    plain_text = plain_text.replace('\r', "\n");
+
+                                    // Normalize tabulations: replace \t with 1 space
+                                    plain_text = plain_text.replace('\t', " ");
+
+                                    // Normalize emdashes: replace ─ with -
+                                    plain_text = plain_text.replace('─', "-");
+
+                                    // Remove multiple consecutive spaces
+                                    let re_spaces = Regex::new(r" +").unwrap();
+                                    plain_text =
+                                        re_spaces.replace_all(&plain_text, " ").to_string();
+
+                                    // Collapse multiple consecutive newlines into single newlines
+                                    let re_newlines = Regex::new(r"\n+").unwrap();
+                                    plain_text =
+                                        re_newlines.replace_all(&plain_text, "\n").to_string();
+
+                                    // Remove leading whitespace before newlines (spaces, tabs, etc.)
+                                    let re_leading = Regex::new(r"\n[ ]+").unwrap();
+                                    plain_text =
+                                        re_leading.replace_all(&plain_text, "\n").to_string();
+
+                                    // Remove trailing whitespace before newlines (spaces, tabs, etc.)
+                                    let re_trailing = Regex::new(r"[ ]+\n").unwrap();
+                                    plain_text =
+                                        re_trailing.replace_all(&plain_text, "\n").to_string();
+
+                                    // Collapse 3+ dashes followed by newline to just 3 dashes + newline
+                                    let re_dashes = Regex::new(r"-{3,}\n").unwrap();
+                                    plain_text =
+                                        re_dashes.replace_all(&plain_text, "---\n").to_string();
+
                                     val = Value::String(plain_text.trim().to_string());
                                 }
                             }
