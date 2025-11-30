@@ -9,7 +9,7 @@ A Model Context Protocol (MCP) server for interacting with Azure DevOps Boards a
 
 -   **Work Item Management**: Create, update, get, and query work items.
 -   **Board Integration**: List teams, boards, and fetch board items.
--   **Attachments**: Upload and download attachments.
+
 -   **WIQL Support**: Run custom WIQL queries.
 -   **Simplified Output**: Optimized JSON output for LLM consumption (reduced token usage).
 
@@ -162,15 +162,7 @@ The server exposes the following tools for MCP clients:
 -   **`azdo_team_get_iterations`**: Get all iterations/sprints for a team.
     -   **Required**: `organization`, `project`, `team_id`
 
-#### Attachments
 
-> **Note**: All attachment tools require `organization` and `project` parameters.
-
--   **`azdo_upload_attachment`**: Upload a file attachment.
-    -   **Required**: `organization`, `project`, `file_name`, `content` (Base64 encoded).
--   **`azdo_download_attachment`**: Download a file attachment.
-    -   **Required**: `organization`, `project`, `id`
-    -   **Optional**: `file_name`
 
 ## Contributing
 
