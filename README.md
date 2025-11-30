@@ -157,6 +157,10 @@ The server exposes the following tools for MCP clients:
     -   **Required**: `organization`, `project`
 -   **`azdo_list_tags`**: List all tags in use in the project.
     -   **Required**: `organization`, `project`
+-   **`azdo_team_get_current_iteration`**: Get the current active iteration/sprint for a team.
+    -   **Required**: `organization`, `project`, `team_id`
+-   **`azdo_team_get_iterations`**: Get all iterations/sprints for a team.
+    -   **Required**: `organization`, `project`, `team_id`
 
 #### Attachments
 
