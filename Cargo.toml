@@ -24,6 +24,7 @@ rmcp = { version = "=0.8.5", features = ["schemars", "transport-streamable-http-
 rmcp-macros = "=0.8.5"
 schemars = "0.8"
 base64 = "0.22"
+html2text = "0.16.4"
 
 [dev-dependencies]
 mockall = "0.12"

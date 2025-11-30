@@ -116,6 +116,21 @@ fn simplify_work_item_json(value: &mut Value) {
                             _ => new_key,
                         };
 
+                        // Convert HTML to text for specific fields
+                        if matches!(
+                            final_key.as_str(),
+                            "Acceptance" | "Description" | "Justification"
+                        ) {
+                            if let Value::String(html_content) = &val {
+                                // Convert HTML to plain text, width doesn't matter as we don't need wrapping
+                                if let Ok(plain_text) =
+                                    html2text::from_read(html_content.as_bytes(), usize::MAX)
+                                {
+                                    val = Value::String(plain_text.trim().to_string());
+                                }
+                            }
+                        }
+
                         // Only insert if not already present (prefer existing values)
                         if !simplified_fields.contains_key(&final_key) {
                             simplified_fields.insert(final_key, val);
