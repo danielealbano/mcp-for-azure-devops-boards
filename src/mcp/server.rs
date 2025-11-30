@@ -1237,10 +1237,10 @@ impl AzureMcpServer {
         if let Some(area_path) = &args.0.area_path {
             field_map.insert("System.AreaPath".to_string(), serde_json::json!(area_path));
         }
-        if let Some(iteration) = &args.0.iteration_path {
+        if let Some(iteration_path) = &args.0.iteration_path {
             field_map.insert(
                 "System.IterationPath".to_string(),
-                serde_json::json!(iteration),
+                serde_json::json!(iteration_path),
             );
         }
         if let Some(state) = &args.0.state {
@@ -1426,10 +1426,10 @@ impl AzureMcpServer {
         }
 
         // Iteration filter
-        if let Some(iteration) = &args.0.iteration_path {
+        if let Some(iteration_path) = &args.0.iteration_path {
             conditions.push(format!(
                 "[System.IterationPath] UNDER '{}'",
-                iteration.replace("'", "''")
+                iteration_path.replace("'", "''")
             ));
         }
 
@@ -1650,10 +1650,10 @@ impl AzureMcpServer {
         if let Some(area_path) = &args.0.area_path {
             field_map.insert("System.AreaPath".to_string(), serde_json::json!(area_path));
         }
-        if let Some(iteration) = &args.0.iteration_path {
+        if let Some(iteration_path) = &args.0.iteration_path {
             field_map.insert(
                 "System.IterationPath".to_string(),
-                serde_json::json!(iteration),
+                serde_json::json!(iteration_path),
             );
         }
         if let Some(state) = &args.0.state {
