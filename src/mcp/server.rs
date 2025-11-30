@@ -28,6 +28,7 @@ where
 
 /// Recursively simplifies the JSON output to reduce token usage for LLMs.
 /// It removes "_links", "url", "descriptor", "imageUrl", "avatar" and simplifies field names.
+/// It also flattens the "fields" object to the root level and removes redundant properties.
 fn simplify_work_item_json(value: &mut Value) {
     match value {
         Value::Object(map) => {
@@ -39,14 +40,14 @@ fn simplify_work_item_json(value: &mut Value) {
             map.remove("avatar");
 
             // Process "fields" if present (specific to Work Items)
-            if let Some(Value::Object(fields_map)) = map.get_mut("fields") {
-                let mut new_fields = serde_json::Map::new();
+            if let Some(Value::Object(fields_map)) = map.remove("fields") {
+                let mut simplified_fields = serde_json::Map::new();
 
-                // Collect keys to remove or rename to avoid borrowing issues
+                // Collect keys to process
                 let keys: Vec<String> = fields_map.keys().cloned().collect();
 
                 for key in keys {
-                    if let Some(mut val) = fields_map.remove(&key) {
+                    if let Some(mut val) = fields_map.get(&key).cloned() {
                         // Simplify Identity fields (objects with displayName, uniqueName, etc.)
                         if let Value::Object(ref obj) = val
                             && let Some(Value::String(name)) = obj.get("displayName")
@@ -60,7 +61,7 @@ fn simplify_work_item_json(value: &mut Value) {
                             val = Value::String(display_value);
                         }
 
-                        // Simplify field names
+                        // Simplify field names and filter out unwanted fields
                         let new_key = if key.starts_with("System.") {
                             key.strip_prefix("System.").unwrap().to_string()
                         } else if key.starts_with("Microsoft.VSTS.Common.") {
@@ -76,20 +77,56 @@ fn simplify_work_item_json(value: &mut Value) {
                                 .unwrap()
                                 .to_string()
                         } else if key.contains("_Kanban.Column") {
-                            // Handle dynamic WEF_..._Kanban.Column
-                            if key.ends_with(".Done") {
-                                "Column.Done".to_string()
-                            } else {
-                                "Column".to_string()
-                            }
+                            // Handle dynamic WEF_..._Kanban.Column -> Column
+                            "Column".to_string()
+                        } else if key.contains("_Kanban.Lane") {
+                            // Handle dynamic WEF_..._Kanban.Lane -> Lane
+                            "Lane".to_string()
                         } else {
                             key
                         };
 
-                        new_fields.insert(new_key, val);
+                        // Skip unwanted fields
+                        if matches!(
+                            new_key.as_str(),
+                            "ActivatedBy"
+                                | "ActivatedDate"
+                                | "BoardColumnDone"
+                                | "ClosedBy"
+                                | "ClosedDate"
+                                | "Column.Done"
+                                | "CommentCount"
+                                | "Reason"
+                                | "ResolvedBy"
+                                | "ResolvedDate"
+                                | "State"
+                                | "StateChangeDate"
+                        ) {
+                            continue;
+                        }
+
+                        // Rename BoardColumn to Column and BoardLane to Lane
+                        let final_key = match new_key.as_str() {
+                            "BoardColumn" => "Column".to_string(),
+                            "BoardLane" => "Lane".to_string(),
+                            "AcceptanceCriteria" => "Acceptance".to_string(),
+                            "TeamProject" => "Project".to_string(),
+                            "WorkItemType" => "Type".to_string(),
+                            "IterationPath" => "Iteration".to_string(),
+                            _ => new_key,
+                        };
+
+                        // Only insert if not already present (prefer existing values)
+                        if !simplified_fields.contains_key(&final_key) {
+                            simplified_fields.insert(final_key, val);
+                        }
                     }
                 }
-                *fields_map = new_fields;
+
+                // Flatten: move all simplified fields to the root level
+                for (k, v) in simplified_fields {
+                    map.insert(k, v);
+                }
             }
 
             // Recursively process all remaining values
