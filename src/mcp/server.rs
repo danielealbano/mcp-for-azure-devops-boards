@@ -705,34 +705,6 @@ struct LinkWorkItemsArgs {
 }
 
 #[derive(Deserialize, JsonSchema)]
-struct UploadAttachmentArgs {
-    /// AzDO org name
-    #[serde(deserialize_with = "deserialize_non_empty_string")]
-    organization: String,
-    /// AzDO project name
-    #[serde(deserialize_with = "deserialize_non_empty_string")]
-    project: String,
-    /// File name with extension
-    file_name: String,
-    /// Base64 encoded file content
-    content: String,
-}
-
-#[derive(Deserialize, JsonSchema)]
-struct DownloadAttachmentArgs {
-    /// AzDO org name
-    #[serde(deserialize_with = "deserialize_non_empty_string")]
-    organization: String,
-    /// AzDO project name
-    #[serde(deserialize_with = "deserialize_non_empty_string")]
-    project: String,
-    /// Attachment ID (GUID)
-    id: String,
-    /// Optional file name for the downloaded attachment
-    file_name: Option<String>,
-}
-
-#[derive(Deserialize, JsonSchema)]
 struct QueryWorkItemsArgs {
     /// AzDO org name
     #[serde(deserialize_with = "deserialize_non_empty_string")]
@@ -1424,74 +1396,6 @@ impl AzureMcpServer {
         Ok(CallToolResult::success(vec![Content::text(
             compact_llm::to_compact_string(&json_value).unwrap(),
         )]))
-    }
-
-    #[tool(description = "Upload attachment")]
-    async fn azdo_upload_attachment(
-        &self,
-        args: Parameters<UploadAttachmentArgs>,
-    ) -> Result<CallToolResult, McpError> {
-        log::info!(
-            "Tool invoked: azdo_upload_attachment(file_name={})",
-            args.0.file_name
-        );
-        use base64::{Engine as _, engine::general_purpose};
-
-        let content = general_purpose::STANDARD
-            .decode(&args.0.content)
-            .map_err(|e| McpError {
-                code: ErrorCode(-32602),
-                message: format!("Invalid base64 content: {}", e).into(),
-                data: None,
-            })?;
-
-        let attachment = crate::azure::attachments::upload_attachment(
-            &self.client,
-            &args.0.organization,
-            &args.0.project,
-            &args.0.file_name,
-            content,
-        )
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
-
-        Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&attachment).unwrap(),
-        )]))
-    }
-
-    #[tool(description = "Download attachment")]
-    async fn azdo_download_attachment(
-        &self,
-        args: Parameters<DownloadAttachmentArgs>,
-    ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azdo_download_attachment(id={})", args.0.id);
-        use base64::{Engine as _, engine::general_purpose};
-
-        let content = crate::azure::attachments::download_attachment(
-            &self.client,
-            &args.0.organization,
-            &args.0.project,
-            &args.0.id,
-            args.0.file_name.as_deref(),
-        )
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
-
-        let encoded = general_purpose::STANDARD.encode(&content);
-
-        Ok(CallToolResult::success(vec![Content::text(format!(
-            r#"{{"content": "{}"}}"#,
-            encoded
-        ))]))
     }
 
     #[tool(description = "Query work items by filters")]
