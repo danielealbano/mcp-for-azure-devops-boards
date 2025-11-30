@@ -161,6 +161,10 @@ fn simplify_work_item_json(value: &mut Value) {
                                     plain_text =
                                         re_dashes.replace_all(&plain_text, "---\n").to_string();
 
+                                    // Remove [Image] strings (case insensitive)
+                                    let re_image = Regex::new(r"(?i)\[image\]").unwrap();
+                                    plain_text = re_image.replace_all(&plain_text, "").to_string();
+
                                     val = Value::String(plain_text.trim().to_string());
                                 }
                             }
