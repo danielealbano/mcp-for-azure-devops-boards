@@ -1255,6 +1255,7 @@ dependencies = [
  "hyper-util",
  "log",
  "mockall",
+ "regex",
  "reqwest",
  "rmcp",
  "rmcp-macros",
