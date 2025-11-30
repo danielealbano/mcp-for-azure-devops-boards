@@ -1948,11 +1948,11 @@ impl rmcp::ServerHandler for AzureMcpServer {
     fn get_info(&self) -> ServerInfo {
         ServerInfo {
             server_info: Implementation {
-                name: "mcp-for-azure-devops-boards".into(),
-                version: "0.3.0".into(),
+                name: env!("CARGO_PKG_NAME").into(),
+                version: env!("CARGO_PKG_VERSION").into(),
                 icons: None,
                 title: None,
-                website_url: None,
+                website_url: Some(env!("CARGO_PKG_HOMEPAGE").into()),
             },
             instructions: Some(
                 "Use this tool to interact with Azure DevOps Boards and Work Items".into(),
