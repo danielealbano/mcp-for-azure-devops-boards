@@ -1,6 +1,8 @@
 use crate::azure::client::AzureDevOpsClient;
 use crate::azure::{boards, organizations, projects, tags, work_items};
 use crate::compact_llm;
+use once_cell::sync::Lazy;
+use regex::Regex;
 use rmcp::{
     ErrorData as McpError,
     handler::server::router::tool::ToolRouter,
@@ -13,6 +15,14 @@ use rmcp::{
 };
 use serde_json::Value;
 use std::sync::Arc;
+
+// Static regex patterns for text cleaning (compiled once, reused many times)
+static RE_SPACES: Lazy<Regex> = Lazy::new(|| Regex::new(r" +").unwrap());
+static RE_NEWLINES: Lazy<Regex> = Lazy::new(|| Regex::new(r"\n+").unwrap());
+static RE_LEADING_WS: Lazy<Regex> = Lazy::new(|| Regex::new(r"\n[ ]+").unwrap());
+static RE_TRAILING_WS: Lazy<Regex> = Lazy::new(|| Regex::new(r"[ ]+\n").unwrap());
+static RE_DASHES: Lazy<Regex> = Lazy::new(|| Regex::new(r"-{3,}\n").unwrap());
+static RE_IMAGE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)\[image\]").unwrap());
 
 /// Custom deserializer for non-empty strings
 fn deserialize_non_empty_string<'de, D>(deserializer: D) -> Result<String, D::Error>
@@ -28,6 +38,7 @@ where
 
 /// Recursively simplifies the JSON output to reduce token usage for LLMs.
 /// It removes "_links", "url", "descriptor", "imageUrl", "avatar" and simplifies field names.
+/// It also flattens the "fields" object to the root level and removes redundant properties.
 fn simplify_work_item_json(value: &mut Value) {
     match value {
         Value::Object(map) => {
@@ -39,10 +50,10 @@ fn simplify_work_item_json(value: &mut Value) {
             map.remove("avatar");
 
             // Process "fields" if present (specific to Work Items)
-            if let Some(Value::Object(fields_map)) = map.get_mut("fields") {
-                let mut new_fields = serde_json::Map::new();
+            if let Some(Value::Object(mut fields_map)) = map.remove("fields") {
+                let mut simplified_fields = serde_json::Map::new();
 
-                // Collect keys to remove or rename to avoid borrowing issues
+                // Collect keys to process
                 let keys: Vec<String> = fields_map.keys().cloned().collect();
 
                 for key in keys {
@@ -60,7 +71,7 @@ fn simplify_work_item_json(value: &mut Value) {
                             val = Value::String(display_value);
                         }
 
-                        // Simplify field names
+                        // Simplify field names and filter out unwanted fields
                         let new_key = if key.starts_with("System.") {
                             key.strip_prefix("System.").unwrap().to_string()
                         } else if key.starts_with("Microsoft.VSTS.Common.") {
@@ -76,20 +87,119 @@ fn simplify_work_item_json(value: &mut Value) {
                                 .unwrap()
                                 .to_string()
                         } else if key.contains("_Kanban.Column") {
-                            // Handle dynamic WEF_..._Kanban.Column
-                            if key.ends_with(".Done") {
-                                "Column.Done".to_string()
-                            } else {
-                                "Column".to_string()
-                            }
+                            // Handle dynamic WEF_..._Kanban.Column -> Column
+                            "Column".to_string()
+                        } else if key.contains("_Kanban.Lane") {
+                            // Handle dynamic WEF_..._Kanban.Lane -> Lane
+                            "Lane".to_string()
                         } else {
                             key
                         };
 
-                        new_fields.insert(new_key, val);
+                        // Skip unwanted fields
+                        if matches!(
+                            new_key.as_str(),
+                            "ActivatedBy"
+                                | "ActivatedDate"
+                                | "BoardColumnDone"
+                                | "ClosedBy"
+                                | "ClosedDate"
+                                | "Column.Done"
+                                | "CommentCount"
+                                | "Reason"
+                                | "ResolvedBy"
+                                | "ResolvedDate"
+                                | "State"
+                                | "StateChangeDate"
+                        ) {
+                            continue;
+                        }
+
+                        // Rename BoardColumn to Column and BoardLane to Lane
+                        let final_key = match new_key.as_str() {
+                            "BoardColumn" => "Column".to_string(),
+                            "BoardLane" => "Lane".to_string(),
+                            "AcceptanceCriteria" => "Acceptance".to_string(),
+                            "TeamProject" => "Project".to_string(),
+                            "WorkItemType" => "Type".to_string(),
+                            "IterationPath" => "Iteration".to_string(),
+                            _ => new_key,
+                        };
+
+                        // Convert HTML to text for specific fields
+                        if matches!(
+                            final_key.as_str(),
+                            "Acceptance" | "Description" | "Justification"
+                        ) {
+                            if let Value::String(html_content) = &val {
+                                // Convert HTML to plain text, width doesn't matter as we don't need wrapping
+                                if let Ok(mut plain_text) =
+                                    html2text::from_read(html_content.as_bytes(), usize::MAX)
+                                {
+                                    // Normalize newlines: replace \r with \n
+                                    plain_text = plain_text.replace('\r', "\n");
+
+                                    // Normalize tabulations: replace \t with 1 space
+                                    plain_text = plain_text.replace('\t', " ");
+
+                                    // Normalize emdashes: replace ─ with -
+                                    plain_text = plain_text.replace('─', "-");
+
+                                    // Remove multiple consecutive spaces
+                                    plain_text =
+                                        RE_SPACES.replace_all(&plain_text, " ").to_string();
+
+                                    // Collapse multiple consecutive newlines into single newlines
+                                    plain_text =
+                                        RE_NEWLINES.replace_all(&plain_text, "\n").to_string();
+
+                                    // Remove leading whitespace before newlines (spaces, tabs, etc.)
+                                    plain_text =
+                                        RE_LEADING_WS.replace_all(&plain_text, "\n").to_string();
+
+                                    // Remove trailing whitespace before newlines (spaces, tabs, etc.)
+                                    plain_text =
+                                        RE_TRAILING_WS.replace_all(&plain_text, "\n").to_string();
+
+                                    // Collapse 3+ dashes followed by newline to just 3 dashes + newline
+                                    plain_text =
+                                        RE_DASHES.replace_all(&plain_text, "---\n").to_string();
+
+                                    // Remove [Image] strings (case insensitive)
+                                    plain_text = RE_IMAGE.replace_all(&plain_text, "").to_string();
+
+                                    val = Value::String(plain_text.trim().to_string());
+                                }
+                            }
+                        }
+
+                        // Optimize Tags field by removing spaces after semicolons
+                        if final_key == "Tags" {
+                            if let Value::String(tags) = &val {
+                                val = Value::String(tags.replace("; ", ";"));
+                            }
+                        }
+
+                        // Abbreviate Type field to just first letter
+                        if final_key == "Type" {
+                            if let Value::String(type_val) = &val {
+                                if let Some(first_char) = type_val.chars().next() {
+                                    val = Value::String(first_char.to_string());
+                                }
+                            }
+                        }
+
+                        // Only insert if not already present (prefer existing values)
+                        if !simplified_fields.contains_key(&final_key) {
+                            simplified_fields.insert(final_key, val);
+                        }
                     }
                 }
-                *fields_map = new_fields;
+
+                // Flatten: move all simplified fields to the root level
+                for (k, v) in simplified_fields {
+                    map.insert(k, v);
+                }
             }
 
             // Recursively process all remaining values
@@ -105,6 +215,111 @@ fn simplify_work_item_json(value: &mut Value) {
         }
         _ => {}
     }
+}
+
+/// Converts work items JSON to CSV format with dynamic column detection.
+/// Only includes columns that have at least one non-null value across all items.
+fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
+    // Define all possible fields in preferred order
+    let all_fields = vec![
+        "id",
+        "Type",
+        "Title",
+        "Description",
+        "Acceptance",
+        "Column",
+        "Lane",
+        "Priority",
+        "AssignedTo",
+        "CreatedBy",
+        "CreatedDate",
+        "ChangedBy",
+        "ChangedDate",
+        "AreaPath",
+        "Iteration",
+        "Project",
+        "Tags",
+        "StartDate",
+        "TargetDate",
+        "Effort",
+        "Risk",
+        "Justification",
+        "ValueArea",
+        "StackRank",
+        "History",
+        "comments",
+    ];
+
+    // Normalize input to array
+    let items = match json_value {
+        Value::Array(arr) => arr.as_slice(),
+        Value::Object(_) => std::slice::from_ref(json_value),
+        _ => return Err("Invalid input: expected object or array".to_string()),
+    };
+
+    if items.is_empty() {
+        return Ok(String::new());
+    }
+
+    // Detect which fields actually have values
+    let mut active_fields = Vec::new();
+    for field in &all_fields {
+        let has_value = items.iter().any(|item| {
+            item.get(field)
+                .map(|v| !v.is_null() && v.as_str().map_or(true, |s| !s.is_empty()))
+                .unwrap_or(false)
+        });
+        if has_value {
+            active_fields.push(*field);
+        }
+    }
+
+    // Build CSV
+    let mut wtr = csv::Writer::from_writer(vec![]);
+
+    // Write header
+    wtr.write_record(&active_fields)
+        .map_err(|e| format!("Failed to write CSV header: {}", e))?;
+
+    // Write rows
+    for item in items {
+        let row: Vec<String> = active_fields
+            .iter()
+            .map(|field| {
+                item.get(*field)
+                    .and_then(|v| match v {
+                        Value::String(s) => {
+                            // Escape newlines and tabs for better LLM consumption
+                            let escaped = s
+                                .replace('\n', "\\n")
+                                .replace('\t', "\\t")
+                                .replace('\r', ""); // Remove carriage returns entirely
+                            Some(escaped)
+                        }
+                        Value::Number(n) => Some(n.to_string()),
+                        Value::Bool(b) => Some(b.to_string()),
+                        Value::Array(_) if *field == "comments" => {
+                            // Serialize comments array as compact JSON using compact_llm
+                            compact_llm::to_compact_string(v).ok()
+                        }
+                        _ => None,
+                    })
+                    .unwrap_or_default()
+            })
+            .collect();
+
+        wtr.write_record(&row)
+            .map_err(|e| format!("Failed to write CSV row: {}", e))?;
+    }
+
+    wtr.flush()
+        .map_err(|e| format!("Failed to flush CSV writer: {}", e))?;
+
+    let csv_bytes = wtr
+        .into_inner()
+        .map_err(|e| format!("Failed to get CSV bytes: {}", e))?;
+
+    String::from_utf8(csv_bytes).map_err(|e| format!("Failed to convert CSV to string: {}", e))
 }
 
 #[derive(Clone)]
@@ -818,13 +1033,16 @@ impl AzureMcpServer {
             data: None,
         })?;
 
-        // Convert to JSON value, simplify, then serialize
+        // Convert to JSON value, simplify, then convert to CSV
         let mut json_value = serde_json::to_value(&work_item).unwrap();
         simplify_work_item_json(&mut json_value);
+        let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert to CSV: {}", e).into(),
+            data: None,
+        })?;
 
-        Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&json_value).unwrap(),
-        )]))
+        Ok(CallToolResult::success(vec![Content::text(csv_output)]))
     }
 
     #[tool(description = "Get multiple work items by IDs")]
@@ -858,13 +1076,16 @@ impl AzureMcpServer {
             data: None,
         })?;
 
-        // Convert to JSON value, simplify, then serialize
+        // Convert to JSON value, simplify, then convert to CSV
         let mut json_value = serde_json::to_value(&work_items).unwrap();
         simplify_work_item_json(&mut json_value);
+        let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert to CSV: {}", e).into(),
+            data: None,
+        })?;
 
-        Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&json_value).unwrap(),
-        )]))
+        Ok(CallToolResult::success(vec![Content::text(csv_output)]))
     }
 
     #[tool(description = "Query work items using WIQL (Work Item Query Language)")]
@@ -890,13 +1111,16 @@ impl AzureMcpServer {
             data: None,
         })?;
 
-        // Convert to JSON value, simplify, then serialize
+        // Convert to JSON value, simplify, then convert to CSV
         let mut json_value = serde_json::to_value(&items).unwrap();
         simplify_work_item_json(&mut json_value);
+        let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert to CSV: {}", e).into(),
+            data: None,
+        })?;
 
-        Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&json_value).unwrap(),
-        )]))
+        Ok(CallToolResult::success(vec![Content::text(csv_output)]))
     }
 
     #[tool(
@@ -1377,13 +1601,16 @@ impl AzureMcpServer {
             data: None,
         })?;
 
-        // Convert to JSON value, simplify, then serialize
+        // Convert to JSON value, simplify, then convert to CSV
         let mut json_value = serde_json::to_value(&work_items).unwrap();
         simplify_work_item_json(&mut json_value);
+        let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert to CSV: {}", e).into(),
+            data: None,
+        })?;
 
-        Ok(CallToolResult::success(vec![Content::text(
-            compact_llm::to_compact_string(&json_value).unwrap(),
-        )]))
+        Ok(CallToolResult::success(vec![Content::text(csv_output)]))
     }
 
     #[tool(description = "Update an existing work item with comprehensive field support")]
