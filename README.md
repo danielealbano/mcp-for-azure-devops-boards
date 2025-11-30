@@ -102,7 +102,9 @@ Add the following to your `claude_desktop_config.json`:
 
 > *This software is currently in development. The tools and their parameters are subject to change.*
 
-The server exposes the following tools for MCP clients:
+The server exposes the following tools for MCP clients.
+
+The general structure of the tool names is `azdo_VERB_WHAT` (e.g., `azdo_list_teams`, `azdo_get_work_item`).
 
 #### Discovery
 
@@ -117,7 +119,7 @@ The server exposes the following tools for MCP clients:
 
 -   **`azdo_create_work_item`**: Create a new work item.
     -   **Required**: `organization`, `project`, `work_item_type`, `title`
-    -   **Optional**: `description`, `assigned_to`, `area_path`, `iteration`, `state`, `board_column`, `board_row`, `priority`, `severity`, `story_points`, `effort`, `remaining_work`, `tags`, `activity`, `parent_id`, `start_date`, `target_date`, `acceptance_criteria`, `repro_steps`, `fields` (JSON string for custom fields).
+    -   **Optional**: `description`, `assigned_to`, `area_path`, `iteration_path`, `state`, `board_column`, `board_row`, `priority`, `severity`, `story_points`, `effort`, `remaining_work`, `tags`, `activity`, `parent_id`, `start_date`, `target_date`, `acceptance_criteria`, `repro_steps`, `fields` (JSON string for custom fields).
 -   **`azdo_update_work_item`**: Update an existing work item.
     -   **Required**: `organization`, `project`, `id`
     -   **Optional**: All fields available in creation.
@@ -129,11 +131,11 @@ The server exposes the following tools for MCP clients:
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
 -   **`azdo_query_work_items`**: Query work items using structured filters.
     -   **Required**: `organization`, `project`
-    -   **Optional Filters**: `area_path`, `iteration`, `created_date_from/to`, `modified_date_from/to`.
+    -   **Optional Filters**: `area_path`, `iteration_path`, `created_date_from/to`, `modified_date_from/to`.
     -   **Inclusion Lists**: `include_board_column`, `include_board_row`, `include_work_item_type`, `include_state`, `include_assigned_to`, `include_tags`.
     -   **Exclusion Lists**: `exclude_board_column`, `exclude_board_row`, `exclude_work_item_type`, `exclude_state`, `exclude_assigned_to`, `exclude_tags`.
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
--   **`azdo_query_work_items_wiql`**: Execute a raw WIQL (Work Item Query Language) query.
+-   **`azdo_query_work_items_by_wiql`**: Execute a raw WIQL (Work Item Query Language) query.
     -   **Required**: `organization`, `project`, `query`
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
 -   **`azdo_add_comment`**: Add a comment to a work item.
@@ -149,17 +151,17 @@ The server exposes the following tools for MCP clients:
     -   **Required**: `organization`, `project`
 -   **`azdo_get_team`**: Get details of a specific team.
     -   **Required**: `organization`, `project`, `team_id`
--   **`azdo_list_boards`**: List boards for a specific team.
+-   **`azdo_list_team_boards`**: List boards for a specific team.
     -   **Required**: `organization`, `project`, `team_id`
--   **`azdo_get_board`**: Get details of a specific board.
+-   **`azdo_get_team_board`**: Get details of a specific board.
     -   **Required**: `organization`, `project`, `team_id`, `board_id`
 -   **`azdo_list_work_item_types`**: List all available work item types in the project.
     -   **Required**: `organization`, `project`
 -   **`azdo_list_tags`**: List all tags in use in the project.
     -   **Required**: `organization`, `project`
--   **`azdo_team_get_current_iteration`**: Get the current active iteration/sprint for a team.
+-   **`azdo_get_team_current_iteration`**: Get the current active iteration/sprint for a team.
     -   **Required**: `organization`, `project`, `team_id`
--   **`azdo_team_get_iterations`**: Get all iterations/sprints for a team.
+-   **`azdo_get_team_iterations`**: Get all iterations/sprints for a team.
     -   **Required**: `organization`, `project`, `team_id`
 
 

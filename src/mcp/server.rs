@@ -506,9 +506,9 @@ struct CreateWorkItemArgs {
     #[serde(default)]
     area_path: Option<String>,
 
-    /// Iteration path (e.g., "MyProject\\Sprint 1"), use azdo_team_get_current_iteration to get the current iteration
+    /// Iteration path (e.g., "MyProject\\Sprint 1"), use azdo_get_team_current_iteration to get the current iteration
     #[serde(default)]
-    iteration: Option<String>,
+    iteration_path: Option<String>,
 
     /// Initial state (New, Active, Resolved, etc.)
     #[serde(default)]
@@ -611,7 +611,7 @@ struct UpdateWorkItemArgs {
 
     /// Iteration path (e.g., "MyProject\\Sprint 1")
     #[serde(default)]
-    iteration: Option<String>,
+    iteration_path: Option<String>,
 
     /// State (New, Active, Resolved, Closed, etc.)
     #[serde(default)]
@@ -719,7 +719,7 @@ struct QueryWorkItemsArgs {
 
     /// Iteration path to filter by (e.g., "MyProject\\Sprint 1"). Uses UNDER operator to include child paths.
     #[serde(default)]
-    iteration: Option<String>,
+    iteration_path: Option<String>,
 
     /// Filter by creation date (from). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
     #[serde(default)]
@@ -946,12 +946,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get current iteration/sprint for team")]
-    async fn azdo_team_get_current_iteration(
+    async fn azdo_get_team_current_iteration(
         &self,
         args: Parameters<GetTeamCurrentIterationArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_team_get_current_iteration(team_id={})",
+            "Tool invoked: azdo_get_team_current_iteration(team_id={})",
             args.0.team_id
         );
 
@@ -989,12 +989,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get all iterations/sprints for team")]
-    async fn azdo_team_get_iterations(
+    async fn azdo_get_team_iterations(
         &self,
         args: Parameters<GetTeamIterationsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_team_get_iterations(team_id={})",
+            "Tool invoked: azdo_get_team_iterations(team_id={})",
             args.0.team_id
         );
 
@@ -1040,11 +1040,14 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "List boards")]
-    async fn azdo_list_boards(
+    async fn azdo_list_team_boards(
         &self,
         args: Parameters<ListBoardsArgs>,
     ) -> Result<CallToolResult, McpError> {
-        log::info!("Tool invoked: azdo_list_boards(team_id={})", args.0.team_id);
+        log::info!(
+            "Tool invoked: azdo_list_team_boards(team_id={})",
+            args.0.team_id
+        );
         let boards = boards::list_boards(
             &self.client,
             &args.0.organization,
@@ -1067,12 +1070,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Get board details")]
-    async fn azdo_get_board(
+    async fn azdo_get_team_board(
         &self,
         args: Parameters<GetBoardArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_get_board(team_id={}, board_id={})",
+            "Tool invoked: azdo_get_team_board(team_id={}, board_id={})",
             args.0.team_id,
             args.0.board_id
         );
@@ -1168,12 +1171,12 @@ impl AzureMcpServer {
     }
 
     #[tool(description = "Query work items using WIQL")]
-    async fn azdo_query_work_items_wiql(
+    async fn azdo_query_work_items_by_wiql(
         &self,
         args: Parameters<QueryWorkItemsArgsWiql>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_query_work_items_wiql(query={})",
+            "Tool invoked: azdo_query_work_items_by_wiql(query={})",
             args.0.query
         );
         let items = work_items::query_work_items(
@@ -1208,11 +1211,11 @@ impl AzureMcpServer {
         args: Parameters<CreateWorkItemArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_create_work_item(work_item_type={}, title={}, area_path={:?}, iteration={:?})",
+            "Tool invoked: azdo_create_work_item(work_item_type={}, title={}, area_path={:?}, iteration_path={:?})",
             args.0.work_item_type,
             args.0.title,
             args.0.area_path,
-            args.0.iteration,
+            args.0.iteration_path,
         );
 
         // Build the field map
@@ -1234,10 +1237,10 @@ impl AzureMcpServer {
         if let Some(area_path) = &args.0.area_path {
             field_map.insert("System.AreaPath".to_string(), serde_json::json!(area_path));
         }
-        if let Some(iteration) = &args.0.iteration {
+        if let Some(iteration_path) = &args.0.iteration_path {
             field_map.insert(
                 "System.IterationPath".to_string(),
-                serde_json::json!(iteration),
+                serde_json::json!(iteration_path),
             );
         }
         if let Some(state) = &args.0.state {
@@ -1404,9 +1407,9 @@ impl AzureMcpServer {
         args: Parameters<QueryWorkItemsArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!(
-            "Tool invoked: azdo_query_work_items(area_path={:?}, iteration={:?}, include_board_column={:?}, exclude_state={:?})",
+            "Tool invoked: azdo_query_work_items(area_path={:?}, iteration_path={:?}, include_board_column={:?}, exclude_state={:?})",
             args.0.area_path,
-            args.0.iteration,
+            args.0.iteration_path,
             args.0.include_board_column,
             args.0.exclude_state
         );
@@ -1423,10 +1426,10 @@ impl AzureMcpServer {
         }
 
         // Iteration filter
-        if let Some(iteration) = &args.0.iteration {
+        if let Some(iteration_path) = &args.0.iteration_path {
             conditions.push(format!(
                 "[System.IterationPath] UNDER '{}'",
-                iteration.replace("'", "''")
+                iteration_path.replace("'", "''")
             ));
         }
 
@@ -1647,10 +1650,10 @@ impl AzureMcpServer {
         if let Some(area_path) = &args.0.area_path {
             field_map.insert("System.AreaPath".to_string(), serde_json::json!(area_path));
         }
-        if let Some(iteration) = &args.0.iteration {
+        if let Some(iteration_path) = &args.0.iteration_path {
             field_map.insert(
                 "System.IterationPath".to_string(),
-                serde_json::json!(iteration),
+                serde_json::json!(iteration_path),
             );
         }
         if let Some(state) = &args.0.state {
