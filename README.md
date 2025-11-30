@@ -106,63 +106,63 @@ The server exposes the following tools for MCP clients:
 
 #### Discovery
 
--   **`azure_devops_list_organizations`**: List all Azure DevOps organizations the authenticated user has access to.
+-   **`azdo_list_organizations`**: List all Azure DevOps organizations the authenticated user has access to.
     -   **Required**: None (uses authenticated user's credentials)
--   **`azure_devops_list_projects`**: List all projects in an Azure DevOps organization.
+-   **`azdo_list_projects`**: List all projects in an Azure DevOps organization.
     -   **Required**: `organization`
 
 #### Work Items
 
 > **Note**: All work item tools require `organization` and `project` parameters.
 
--   **`azure_devops_create_work_item`**: Create a new work item.
+-   **`azdo_create_work_item`**: Create a new work item.
     -   **Required**: `organization`, `project`, `work_item_type`, `title`
     -   **Optional**: `description`, `assigned_to`, `area_path`, `iteration`, `state`, `board_column`, `board_row`, `priority`, `severity`, `story_points`, `effort`, `remaining_work`, `tags`, `activity`, `parent_id`, `start_date`, `target_date`, `acceptance_criteria`, `repro_steps`, `fields` (JSON string for custom fields).
--   **`azure_devops_update_work_item`**: Update an existing work item.
+-   **`azdo_update_work_item`**: Update an existing work item.
     -   **Required**: `organization`, `project`, `id`
     -   **Optional**: All fields available in creation.
--   **`azure_devops_get_work_item`**: Get details of a specific work item.
+-   **`azdo_get_work_item`**: Get details of a specific work item.
     -   **Required**: `organization`, `project`, `id`
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
--   **`azure_devops_get_work_items`**: Get multiple work items by their IDs.
+-   **`azdo_get_work_items`**: Get multiple work items by their IDs.
     -   **Required**: `organization`, `project`, `ids` (array of work item IDs)
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
--   **`azure_devops_query_work_items`**: Query work items using structured filters.
+-   **`azdo_query_work_items`**: Query work items using structured filters.
     -   **Required**: `organization`, `project`
     -   **Optional Filters**: `area_path`, `iteration`, `created_date_from/to`, `modified_date_from/to`.
     -   **Inclusion Lists**: `include_board_column`, `include_board_row`, `include_work_item_type`, `include_state`, `include_assigned_to`, `include_tags`.
     -   **Exclusion Lists**: `exclude_board_column`, `exclude_board_row`, `exclude_work_item_type`, `exclude_state`, `exclude_assigned_to`, `exclude_tags`.
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
--   **`azure_devops_query_work_items_wiql`**: Execute a raw WIQL (Work Item Query Language) query.
+-   **`azdo_query_work_items_wiql`**: Execute a raw WIQL (Work Item Query Language) query.
     -   **Required**: `organization`, `project`, `query`
     -   **Optional**: `include_latest_n_comments` (number of recent comments to include, -1 for all)
--   **`azure_devops_add_comment`**: Add a comment to a work item.
+-   **`azdo_add_comment`**: Add a comment to a work item.
     -   **Required**: `organization`, `project`, `work_item_id`, `text`
--   **`azure_devops_link_work_items`**: Create a relationship between two work items.
+-   **`azdo_link_work_items`**: Create a relationship between two work items.
     -   **Required**: `organization`, `project`, `source_id`, `target_id`, `link_type` (Parent, Child, Related, Duplicate, Dependency).
 
 #### Boards & Teams
 
 > **Note**: All board and team tools require `organization` and `project` parameters.
 
--   **`azure_devops_list_teams`**: List all teams in the project.
+-   **`azdo_list_teams`**: List all teams in the project.
     -   **Required**: `organization`, `project`
--   **`azure_devops_get_team`**: Get details of a specific team.
+-   **`azdo_get_team`**: Get details of a specific team.
     -   **Required**: `organization`, `project`, `team_id`
--   **`azure_devops_list_boards`**: List boards for a specific team.
+-   **`azdo_list_boards`**: List boards for a specific team.
     -   **Required**: `organization`, `project`, `team_id`
--   **`azure_devops_get_board`**: Get details of a specific board.
+-   **`azdo_get_board`**: Get details of a specific board.
     -   **Required**: `organization`, `project`, `team_id`, `board_id`
--   **`azure_devops_list_work_item_types`**: List all available work item types in the project.
+-   **`azdo_list_work_item_types`**: List all available work item types in the project.
     -   **Required**: `organization`, `project`
 
 #### Attachments
 
 > **Note**: All attachment tools require `organization` and `project` parameters.
 
--   **`azure_devops_upload_attachment`**: Upload a file attachment.
+-   **`azdo_upload_attachment`**: Upload a file attachment.
     -   **Required**: `organization`, `project`, `file_name`, `content` (Base64 encoded).
--   **`azure_devops_download_attachment`**: Download a file attachment.
+-   **`azdo_download_attachment`**: Download a file attachment.
     -   **Required**: `organization`, `project`, `id`
     -   **Optional**: `file_name`
 
