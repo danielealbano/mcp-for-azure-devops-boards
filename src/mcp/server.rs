@@ -166,6 +166,13 @@ fn simplify_work_item_json(value: &mut Value) {
                             }
                         }
 
+                        // Optimize Tags field by removing spaces after semicolons
+                        if final_key == "Tags" {
+                            if let Value::String(tags) = &val {
+                                val = Value::String(tags.replace("; ", ";"));
+                            }
+                        }
+
                         // Only insert if not already present (prefer existing values)
                         if !simplified_fields.contains_key(&final_key) {
                             simplified_fields.insert(final_key, val);
