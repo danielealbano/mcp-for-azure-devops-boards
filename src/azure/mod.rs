@@ -5,4 +5,5 @@ pub mod models;
 pub mod organizations;
 pub mod projects;
 pub mod tags;
+pub mod teams;
 pub mod work_items;

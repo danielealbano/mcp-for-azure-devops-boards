@@ -433,6 +433,23 @@ struct GetTeamIterationsArgs {
 }
 
 #[derive(Deserialize, JsonSchema)]
+struct ListTeamMembersArgs {
+    /// AzDO org name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    organization: String,
+    /// AzDO project name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    project: String,
+    /// Team ID or name
+    team_id: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct GetCurrentUserArgs {
+    // No parameters needed
+}
+
+#[derive(Deserialize, JsonSchema)]
 struct GetWorkItemArgs {
     /// AzDO org name
     #[serde(deserialize_with = "deserialize_non_empty_string")]
@@ -819,6 +836,102 @@ impl AzureMcpServer {
         Ok(CallToolResult::success(vec![Content::text(
             compact_llm::to_compact_string(&team_names).unwrap(),
         )]))
+    }
+
+    #[tool(description = "List team members")]
+    async fn azdo_list_team_members(
+        &self,
+        args: Parameters<ListTeamMembersArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!("Tool invoked: azdo_list_team_members");
+        let members = self
+            .client
+            .list_team_members(&args.0.organization, &args.0.project, &args.0.team_id)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
+
+        let mut wtr = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(vec![]);
+
+        for member in members {
+            wtr.write_record(&[member.identity.display_name, member.identity.unique_name])
+                .map_err(|e| McpError {
+                    code: ErrorCode(-32000),
+                    message: format!("Failed to write CSV: {}", e).into(),
+                    data: None,
+                })?;
+        }
+
+        wtr.flush().map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to flush CSV: {}", e).into(),
+            data: None,
+        })?;
+
+        let csv_bytes = wtr.into_inner().map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to get CSV bytes: {}", e).into(),
+            data: None,
+        })?;
+
+        let data = String::from_utf8(csv_bytes).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert CSV to string: {}", e).into(),
+            data: None,
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(data)]))
+    }
+
+    #[tool(description = "Get current user profile")]
+    async fn azdo_get_current_user(
+        &self,
+        _args: Parameters<GetCurrentUserArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!("Tool invoked: azdo_get_current_user");
+        let profile = organizations::get_profile(&self.client)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
+
+        let mut wtr = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(vec![]);
+
+        wtr.write_record(&[profile.display_name, profile.email_address])
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: format!("Failed to write CSV: {}", e).into(),
+                data: None,
+            })?;
+
+        wtr.flush().map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to flush CSV: {}", e).into(),
+            data: None,
+        })?;
+
+        let csv_bytes = wtr.into_inner().map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to get CSV bytes: {}", e).into(),
+            data: None,
+        })?;
+
+        let data = String::from_utf8(csv_bytes).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: format!("Failed to convert CSV to string: {}", e).into(),
+            data: None,
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(data)]))
     }
 
     #[tool(description = "List AzDO organizations")]
