@@ -1167,14 +1167,29 @@ impl AzureMcpServer {
     ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: azdo_list_iteration_paths");
 
+        // Validate timeframe if provided
+        if let Some(ref timeframe) = args.0.timeframe {
+            if !matches!(timeframe.as_str(), "current" | "past" | "future") {
+                return Err(McpError {
+                    code: ErrorCode(-32602),
+                    message: format!(
+                        "Invalid timeframe '{}'. Valid values are: 'current', 'past', 'future'",
+                        timeframe
+                    )
+                    .into(),
+                    data: None,
+                });
+            }
+        }
+
         // If team_id is provided, use team-specific iterations
         if let Some(team_id) = &args.0.team_id {
-            let iterations = iterations::get_team_iterations(
+            let mut iterations = iterations::get_team_iterations(
                 &self.client,
                 &args.0.organization,
                 &args.0.project,
                 team_id,
-                args.0.timeframe.as_deref(),
+                None, // Get all iterations first
             )
             .await
             .map_err(|e| McpError {
@@ -1182,6 +1197,17 @@ impl AzureMcpServer {
                 message: e.to_string().into(),
                 data: None,
             })?;
+
+            // Filter by timeframe if provided (post-acquisition filtering)
+            if let Some(ref timeframe) = args.0.timeframe {
+                iterations.retain(|iter| {
+                    iter.attributes
+                        .time_frame
+                        .as_ref()
+                        .map(|tf| tf.eq_ignore_ascii_case(timeframe))
+                        .unwrap_or(false)
+                });
+            }
 
             // Convert to CSV format: name,timeframe,start_date,finish_date
             let mut csv_lines = Vec::new();
@@ -1225,23 +1251,11 @@ impl AzureMcpServer {
                 data: None,
             })?;
 
-            // Flatten the tree into a list of paths
-            fn collect_paths(
-                node: &classification_nodes::ClassificationNode,
-                paths: &mut Vec<String>,
-            ) {
-                paths.push(node.path.clone());
-                if let Some(children) = &node.children {
-                    for child in children {
-                        collect_paths(child, paths);
-                    }
-                }
-            }
-
+            // Flatten the tree into a list of paths and return as CSV
             let mut paths = Vec::new();
-            collect_paths(&root_node, &mut paths);
+            root_node.collect_paths(&mut paths);
 
-            // Return as newline-separated list
+            // Return as CSV format: path (single column for consistency)
             Ok(CallToolResult::success(vec![Content::text(
                 paths.join("\n"),
             )]))
