@@ -324,6 +324,36 @@ fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
     String::from_utf8(csv_bytes).map_err(|e| format!("Failed to convert CSV to string: {}", e))
 }
 
+/// Converts board columns to CSV format.
+/// Columns: name, item_limit (WIP), is_split, column_type
+fn board_columns_to_csv(columns: &[boards::BoardColumn]) -> Result<String, String> {
+    let mut wtr = csv::Writer::from_writer(vec![]);
+
+    // Write header
+    wtr.write_record(&["name", "item_limit", "is_split", "column_type"])
+        .map_err(|e| format!("Failed to write CSV header: {}", e))?;
+
+    // Write rows
+    for column in columns {
+        wtr.write_record(&[
+            &column.name,
+            &column.item_limit.to_string(),
+            &column.is_split.unwrap_or(false).to_string(),
+            &column.column_type,
+        ])
+        .map_err(|e| format!("Failed to write CSV row: {}", e))?;
+    }
+
+    wtr.flush()
+        .map_err(|e| format!("Failed to flush CSV writer: {}", e))?;
+
+    let csv_bytes = wtr
+        .into_inner()
+        .map_err(|e| format!("Failed to get CSV bytes: {}", e))?;
+
+    String::from_utf8(csv_bytes).map_err(|e| format!("Failed to convert CSV to string: {}", e))
+}
+
 #[derive(Clone)]
 pub struct AzureMcpServer {
     client: Arc<AzureDevOpsClient>,
@@ -354,6 +384,34 @@ struct ListBoardsArgs {
     project: String,
     /// Team ID or name
     team_id: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListBoardColumnsArgs {
+    /// AzDO org name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    organization: String,
+    /// AzDO project name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    project: String,
+    /// Team ID or name
+    team_id: String,
+    /// Board ID or name
+    board_id: String,
+}
+
+#[derive(Deserialize, JsonSchema)]
+struct ListBoardRowsArgs {
+    /// AzDO org name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    organization: String,
+    /// AzDO project name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
+    project: String,
+    /// Team ID or name
+    team_id: String,
+    /// Board ID or name
+    board_id: String,
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1318,6 +1376,74 @@ impl AzureMcpServer {
 
         Ok(CallToolResult::success(vec![Content::text(
             compact_llm::to_compact_string(&board).unwrap(),
+        )]))
+    }
+
+    #[tool(description = "List board columns")]
+    async fn azdo_list_board_columns(
+        &self,
+        args: Parameters<ListBoardColumnsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!(
+            "Tool invoked: azdo_list_board_columns(team_id={}, board_id={})",
+            args.0.team_id,
+            args.0.board_id
+        );
+        let columns = boards::list_board_columns(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.team_id,
+            &args.0.board_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
+
+        let csv_data = board_columns_to_csv(&columns).map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.into(),
+            data: None,
+        })?;
+
+        Ok(CallToolResult::success(vec![Content::text(csv_data)]))
+    }
+
+    #[tool(description = "List board rows (swimlanes)")]
+    async fn azdo_list_board_rows(
+        &self,
+        args: Parameters<ListBoardRowsArgs>,
+    ) -> Result<CallToolResult, McpError> {
+        log::info!(
+            "Tool invoked: azdo_list_board_rows(team_id={}, board_id={})",
+            args.0.team_id,
+            args.0.board_id
+        );
+        let rows = boards::list_board_rows(
+            &self.client,
+            &args.0.organization,
+            &args.0.project,
+            &args.0.team_id,
+            &args.0.board_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
+
+        // Extract row names into an array
+        let row_names: Vec<String> = rows
+            .into_iter()
+            .map(|row| row.name.unwrap_or_default())
+            .collect();
+
+        Ok(CallToolResult::success(vec![Content::text(
+            compact_llm::to_compact_string(&row_names).unwrap(),
         )]))
     }
 
