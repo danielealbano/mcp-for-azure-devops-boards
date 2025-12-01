@@ -202,6 +202,10 @@ We welcome contributions!
 - Check code style: `cargo fmt --check`
 - Linting: `cargo clippy`
 
+## Disclaimer
+
+This project is not affiliated with, endorsed by, or sponsored by Microsoft. Azure, Azure DevOps, and related trademarks are the property of their respective owners. This software uses standard Microsoft's services APIs to interact with Azure and Microsoft Graph, among other services.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
