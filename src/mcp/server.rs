@@ -877,11 +877,13 @@ impl AzureMcpServer {
         _args: Parameters<GetCurrentUserArgs>,
     ) -> Result<CallToolResult, McpError> {
         log::info!("Tool invoked: azdo_get_current_user");
-        let profile = self.client.get_current_user().await.map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
+        let profile = organizations::get_profile(&self.client)
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
 
         let mut wtr = csv::WriterBuilder::new()
             .has_headers(false)
