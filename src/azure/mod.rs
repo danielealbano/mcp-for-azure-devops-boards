@@ -1,4 +1,5 @@
 pub mod boards;
+pub mod classification_nodes;
 pub mod client;
 pub mod iterations;
 pub mod models;
