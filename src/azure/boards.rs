@@ -229,3 +229,59 @@ pub async fn get_board(
         )
         .await
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BoardColumnsResponse {
+    pub value: Vec<BoardColumn>,
+}
+
+/// List columns for a specific board
+pub async fn list_board_columns(
+    client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
+    team_id: &str,
+    board_id: &str,
+) -> Result<Vec<BoardColumn>, AzureError> {
+    // Board columns: https://dev.azure.com/{org}/{project}/{team}/_apis/work/boards/{board}/columns
+    let path = format!("work/boards/{}/columns?api-version=7.1", board_id);
+    let response: BoardColumnsResponse = client
+        .team_request(
+            organization,
+            project,
+            Method::GET,
+            team_id,
+            &path,
+            None::<&String>,
+        )
+        .await?;
+    Ok(response.value)
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BoardRowsResponse {
+    pub value: Vec<BoardRow>,
+}
+
+/// List rows (swimlanes) for a specific board
+pub async fn list_board_rows(
+    client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
+    team_id: &str,
+    board_id: &str,
+) -> Result<Vec<BoardRow>, AzureError> {
+    // Board rows: https://dev.azure.com/{org}/{project}/{team}/_apis/work/boards/{board}/rows
+    let path = format!("work/boards/{}/rows?api-version=7.1", board_id);
+    let response: BoardRowsResponse = client
+        .team_request(
+            organization,
+            project,
+            Method::GET,
+            team_id,
+            &path,
+            None::<&String>,
+        )
+        .await?;
+    Ok(response.value)
+}
