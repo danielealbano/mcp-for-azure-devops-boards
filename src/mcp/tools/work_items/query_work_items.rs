@@ -166,10 +166,10 @@ pub async fn query_work_items(
             date
         ));
     }
-    if let Some(date) = &args.modified_date_from {
+    if let Some(date) = &args.changed_date_from {
         conditions.push(format!("[System.ChangedDate] >= '{}'", date));
     }
-    if let Some(date) = &args.modified_date_to {
+    if let Some(date) = &args.changed_date_to {
         conditions.push(format!("[System.ChangedDate] <= '{}'", date));
     }
 
