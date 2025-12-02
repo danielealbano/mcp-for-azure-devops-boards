@@ -21,20 +21,26 @@ pub async fn get_work_item(
     project: &str,
     id: u32,
     include_latest_n_comments: Option<i32>,
-) -> Result<WorkItem, AzureError> {
-    let items = get_work_items(
+) -> Result<Option<WorkItem>, AzureError> {
+    let result = get_work_items(
         client,
         organization,
         project,
         &[id],
         include_latest_n_comments,
     )
-    .await?;
+    .await;
 
-    items
-        .into_iter()
-        .next()
-        .ok_or_else(|| AzureError::ApiError(format!("Work item {} not found", id)))
+    match result {
+        Ok(items) => Ok(items.into_iter().next()),
+        Err(AzureError::ApiError(msg))
+            if msg.contains("WorkItemUnauthorizedAccessException")
+                || msg.contains("Work item does not exist") =>
+        {
+            Ok(None)
+        }
+        Err(e) => Err(e),
+    }
 }
 
 pub async fn get_comments(
