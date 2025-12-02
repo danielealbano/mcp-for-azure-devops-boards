@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "mcp-tools-codegen"]
+
 [package]
 name = "mcp-for-azure-devops-boards"
 version = "0.4.0-dev"
@@ -8,7 +11,9 @@ description = "A Model Context Protocol (MCP) server for interacting with Azure 
 homepage = "https://github.com/danielealbano/mcp-for-azure-devops-boards"
 repository = "https://github.com/danielealbano/mcp-for-azure-devops-boards"
 
+
 [dependencies]
+mcp-tools-codegen = { path = "mcp-tools-codegen" }
 hyper = "1.5.1"
 hyper-util = { version = "0.1.10", features = ["tokio", "service", "server", "http1", "http2"] }
 tower = "0.5.2"

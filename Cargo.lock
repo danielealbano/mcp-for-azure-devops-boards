@@ -1254,6 +1254,7 @@ dependencies = [
  "hyper 1.8.1",
  "hyper-util",
  "log",
+ "mcp-tools-codegen",
  "mockall",
  "once_cell",
  "regex",
@@ -1267,6 +1268,15 @@ dependencies = [
  "tokio",
  "tower",
  "urlencoding",
+]
+
+[[package]]
+name = "mcp-tools-codegen"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
