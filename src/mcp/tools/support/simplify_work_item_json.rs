@@ -84,7 +84,8 @@ pub fn simplify_work_item_json(value: &mut Value) {
                                 | "ResolvedBy"
                                 | "ResolvedDate"
                                 | "State"
-                                | "StateChangeDate"
+                                | "ChangedBy"
+                                | "ChangedDate"
                         ) {
                             continue;
                         }
