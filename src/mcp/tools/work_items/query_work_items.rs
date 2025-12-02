@@ -43,6 +43,14 @@ pub struct QueryWorkItemsArgs {
     #[serde(default)]
     pub state_change_date_to: Option<String>,
 
+    /// Filter by modified date (from). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
+    #[serde(default)]
+    pub modified_date_from: Option<String>,
+
+    /// Filter by modified date (to). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
+    #[serde(default)]
+    pub modified_date_to: Option<String>,
+
     /// Board columns to include (e.g., ["Active", "Resolved"])
     #[serde(default)]
     pub include_board_column: Vec<String>,
@@ -82,6 +90,14 @@ pub struct QueryWorkItemsArgs {
     /// Assignees to exclude
     #[serde(default)]
     pub exclude_assigned_to: Vec<String>,
+
+    /// Changed by users to include (e.g., ["John Doe", "jane@example.com"])
+    #[serde(default)]
+    pub include_changed_by: Vec<String>,
+
+    /// Changed by users to exclude
+    #[serde(default)]
+    pub exclude_changed_by: Vec<String>,
 
     /// Tags to include (e.g., ["bug", "critical"])
     #[serde(default)]
@@ -149,6 +165,12 @@ pub async fn query_work_items(
             "[Microsoft.VSTS.Common.StateChangeDate] <= '{}'",
             date
         ));
+    }
+    if let Some(date) = &args.modified_date_from {
+        conditions.push(format!("[System.ChangedDate] >= '{}'", date));
+    }
+    if let Some(date) = &args.modified_date_to {
+        conditions.push(format!("[System.ChangedDate] <= '{}'", date));
     }
 
     // Include filters (using IN operator)
@@ -250,6 +272,24 @@ pub async fn query_work_items(
             "[System.AssignedTo] NOT IN ({})",
             values.join(", ")
         ));
+    }
+
+    if !args.include_changed_by.is_empty() {
+        let values: Vec<String> = args
+            .include_changed_by
+            .iter()
+            .map(|v| format!("'{}'", v.replace("'", "''")))
+            .collect();
+        conditions.push(format!("[System.ChangedBy] IN ({})", values.join(", ")));
+    }
+
+    if !args.exclude_changed_by.is_empty() {
+        let values: Vec<String> = args
+            .exclude_changed_by
+            .iter()
+            .map(|v| format!("'{}'", v.replace("'", "''")))
+            .collect();
+        conditions.push(format!("[System.ChangedBy] NOT IN ({})", values.join(", ")));
     }
 
     // Tag filters (using CONTAINS operator)

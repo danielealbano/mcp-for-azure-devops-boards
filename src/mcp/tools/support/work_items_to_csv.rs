@@ -17,7 +17,8 @@ pub fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
         "AssignedTo",
         "CreatedBy",
         "CreatedDate",
-        "StateChangeDate",
+        "ChangedBy",
+        "ChangedDate",
         "AreaPath",
         "Iteration",
         "Project",
@@ -29,6 +30,7 @@ pub fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
         "Justification",
         "ValueArea",
         "StackRank",
+        "StateChangeDate",
         "History",
         "comments",
     ];
