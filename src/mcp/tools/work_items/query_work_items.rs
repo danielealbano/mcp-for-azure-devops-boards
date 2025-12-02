@@ -35,13 +35,13 @@ pub struct QueryWorkItemsArgs {
     #[serde(default)]
     pub created_date_to: Option<String>,
 
-    /// Filter by modified date (from). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
+    /// Filter by state change date (from). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
     #[serde(default)]
-    pub modified_date_from: Option<String>,
+    pub state_change_date_from: Option<String>,
 
-    /// Filter by modified date (to). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
+    /// Filter by state change date (to). Format: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ
     #[serde(default)]
-    pub modified_date_to: Option<String>,
+    pub state_change_date_to: Option<String>,
 
     /// Board columns to include (e.g., ["Active", "Resolved"])
     #[serde(default)]
@@ -138,11 +138,17 @@ pub async fn query_work_items(
     if let Some(date) = &args.created_date_to {
         conditions.push(format!("[System.CreatedDate] <= '{}'", date));
     }
-    if let Some(date) = &args.modified_date_from {
-        conditions.push(format!("[System.ChangedDate] >= '{}'", date));
+    if let Some(date) = &args.state_change_date_from {
+        conditions.push(format!(
+            "[Microsoft.VSTS.Common.StateChangeDate] >= '{}'",
+            date
+        ));
     }
-    if let Some(date) = &args.modified_date_to {
-        conditions.push(format!("[System.ChangedDate] <= '{}'", date));
+    if let Some(date) = &args.state_change_date_to {
+        conditions.push(format!(
+            "[Microsoft.VSTS.Common.StateChangeDate] <= '{}'",
+            date
+        ));
     }
 
     // Include filters (using IN operator)
