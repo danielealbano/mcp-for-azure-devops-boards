@@ -46,22 +46,28 @@ pub async fn get_team_current_iteration(
         data: None,
     })?;
 
-    // Extract dates without time (just YYYY-MM-DD)
-    let start_date = iteration
-        .attributes
-        .start_date
-        .as_ref()
-        .and_then(|d| d.split('T').next())
-        .unwrap_or("N/A");
-    let finish_date = iteration
-        .attributes
-        .finish_date
-        .as_ref()
-        .and_then(|d| d.split('T').next())
-        .unwrap_or("N/A");
+    match iteration {
+        Some(iteration) => {
+            // Extract dates without time (just YYYY-MM-DD)
+            let start_date = iteration
+                .attributes
+                .start_date
+                .as_ref()
+                .and_then(|d| d.split('T').next())
+                .unwrap_or("N/A");
+            let finish_date = iteration
+                .attributes
+                .finish_date
+                .as_ref()
+                .and_then(|d| d.split('T').next())
+                .unwrap_or("N/A");
 
-    // Return CSV format: name,start_date,finish_date
-    let csv_output = format!("{},{},{}", iteration.name, start_date, finish_date);
-
-    Ok(CallToolResult::success(vec![Content::text(csv_output)]))
+            // Return CSV format: name,start_date,finish_date
+            let csv_output = format!("{},{},{}", iteration.name, start_date, finish_date);
+            Ok(CallToolResult::success(vec![Content::text(csv_output)]))
+        }
+        None => Ok(CallToolResult::success(vec![Content::text(
+            "No current iteration found",
+        )])),
+    }
 }

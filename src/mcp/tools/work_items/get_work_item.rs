@@ -45,14 +45,21 @@ pub async fn get_work_item(
         data: None,
     })?;
 
-    // Convert to JSON value, simplify, then convert to CSV
-    let mut json_value = serde_json::to_value(&work_item).unwrap();
-    simplify_work_item_json(&mut json_value);
-    let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: format!("Failed to convert to CSV: {}", e).into(),
-        data: None,
-    })?;
+    match work_item {
+        Some(work_item) => {
+            // Convert to JSON value, simplify, then convert to CSV
+            let mut json_value = serde_json::to_value(&work_item).unwrap();
+            simplify_work_item_json(&mut json_value);
+            let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: format!("Failed to convert to CSV: {}", e).into(),
+                data: None,
+            })?;
 
-    Ok(CallToolResult::success(vec![Content::text(csv_output)]))
+            Ok(CallToolResult::success(vec![Content::text(csv_output)]))
+        }
+        None => Ok(CallToolResult::success(vec![Content::text(
+            "Work item not found",
+        )])),
+    }
 }

@@ -99,9 +99,15 @@ pub async fn list_iteration_paths(
             ));
         }
 
-        Ok(CallToolResult::success(vec![Content::text(
-            csv_lines.join(","),
-        )]))
+        if csv_lines.is_empty() {
+            Ok(CallToolResult::success(vec![Content::text(
+                "No iterations found",
+            )]))
+        } else {
+            Ok(CallToolResult::success(vec![Content::text(
+                csv_lines.join(","),
+            )]))
+        }
     } else {
         // Use project-level classification nodes
         let root_node = classification_nodes::list_iteration_paths(
@@ -123,8 +129,14 @@ pub async fn list_iteration_paths(
         root_node.collect_paths(&mut paths);
 
         // Return as CSV format: path (single column for consistency)
-        Ok(CallToolResult::success(vec![Content::text(
-            paths.join(","),
-        )]))
+        if paths.is_empty() {
+            Ok(CallToolResult::success(vec![Content::text(
+                "No iterations found",
+            )]))
+        } else {
+            Ok(CallToolResult::success(vec![Content::text(
+                paths.join(","),
+            )]))
+        }
     }
 }

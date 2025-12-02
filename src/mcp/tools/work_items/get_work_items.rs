@@ -37,7 +37,7 @@ pub async fn get_work_items(
 
     if args.ids.is_empty() {
         return Ok(CallToolResult::success(vec![Content::text(
-            "[]".to_string(),
+            "No work items found",
         )]));
     }
 
@@ -55,6 +55,12 @@ pub async fn get_work_items(
         message: e.to_string().into(),
         data: None,
     })?;
+
+    if work_items.is_empty() {
+        return Ok(CallToolResult::success(vec![Content::text(
+            "No work items found",
+        )]));
+    }
 
     // Convert to JSON value, simplify, then convert to CSV
     let mut json_value = serde_json::to_value(&work_items).unwrap();

@@ -51,6 +51,12 @@ pub async fn query_work_items_by_wiql(
         data: None,
     })?;
 
+    if items.is_empty() {
+        return Ok(CallToolResult::success(vec![Content::text(
+            "No work items found",
+        )]));
+    }
+
     // Convert to JSON value, simplify, then convert to CSV
     let mut json_value = serde_json::to_value(&items).unwrap();
     simplify_work_item_json(&mut json_value);

@@ -32,10 +32,10 @@ pub async fn get_team_current_iteration(
     organization: &str,
     project: &str,
     team_id: &str,
-) -> Result<TeamSettingsIteration, AzureError> {
+) -> Result<Option<TeamSettingsIteration>, AzureError> {
     // API: https://dev.azure.com/{org}/{project}/{team}/_apis/work/teamsettings/iterations?$timeframe=current&api-version=7.1
     let path = "work/teamsettings/iterations?$timeframe=current&api-version=7.1";
-    let response: IterationListResponse = client
+    let result: Result<IterationListResponse, AzureError> = client
         .team_request(
             organization,
             project,
@@ -44,14 +44,18 @@ pub async fn get_team_current_iteration(
             path,
             None::<&String>,
         )
-        .await?;
+        .await;
 
-    // The API returns a list, but with $timeframe=current there should only be one
-    response
-        .value
-        .into_iter()
-        .next()
-        .ok_or_else(|| AzureError::ApiError("No current iteration found for this team".to_string()))
+    match result {
+        Ok(response) => {
+            // The API returns a list, but with $timeframe=current there should only be one
+            Ok(response.value.into_iter().next())
+        }
+        Err(AzureError::ApiError(msg)) if msg.contains("CurrentIterationDoesNotExistException") => {
+            Ok(None)
+        }
+        Err(e) => Err(e),
+    }
 }
 
 /// Get all iterations for a team, optionally filtered by timeframe
