@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{ItemFn, parse_macro_input};
+use syn::{parse_macro_input, ItemFn};
 
 /// Attribute macro to mark a function as an MCP tool.
 ///
