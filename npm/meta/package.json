@@ -1,0 +1,26 @@
+{
+  "name": "mcp-for-azure-devops-boards",
+  "version": "0.5.0",
+  "description": "MCP server for Azure DevOps Boards (npm wrapper).",
+  "homepage": "https://github.com/danielealbano/mcp-for-azure-devops-boards",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielealbano/mcp-for-azure-devops-boards.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "mcp-for-azure-devops-boards": "bin/run.js"
+  },
+  "optionalDependencies": {
+    "@danielealbano/mcp-for-azure-devops-boards-darwin-arm64": "0.5.0",
+    "@danielealbano/mcp-for-azure-devops-boards-linux-x64": "0.5.0",
+    "@danielealbano/mcp-for-azure-devops-boards-linux-arm64": "0.5.0",
+    "@danielealbano/mcp-for-azure-devops-boards-win32-x64": "0.5.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/"
+  ]
+}
