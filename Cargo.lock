@@ -1239,7 +1239,7 @@ dependencies = [
 
 [[package]]
 name = "mcp-for-azure-devops-boards"
-version = "0.4.0-dev"
+version = "0.5.0"
 dependencies = [
  "anyhow",
  "async-trait",
