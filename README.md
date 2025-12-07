@@ -15,6 +15,8 @@ A Model Context Protocol (MCP) server for interacting with Azure DevOps Boards a
 
 ## Installation
 
+Check out the section [MCP Configuration](#mcp-configuration) for how to configure your preferred AI (MCP) client.
+
 ### macOS (Homebrew)
 
 ```bash
@@ -24,7 +26,14 @@ brew install mcp-for-azure-devops-boards
 
 The path to the binary will be `/opt/homebrew/bin/mcp-for-azure-devops-boards`.
 
-Check out the section [MCP Configuration](#mcp-configuration) for how to configure your preferred AI (MCP) client.
+### Windows (Scoop)
+
+```powershell
+scoop bucket add mcp-tools https://github.com/danielealbano/scoop-mcp-tools
+scoop install mcp-for-azure-devops-boards
+```
+
+The path to the binary will be `%USERPROFILE%\scoop\apps\mcp-for-azure-devops-boards\current\mcp-for-azure-devops-boards.exe`.
 
 ### Configuration
 
@@ -46,6 +55,11 @@ If you don't have the Azure CLI installed:
 **macOS (Homebrew):**
 ```bash
 brew install azure-cli
+```
+
+**Windows (Scoop):**
+```powershell
+scoop install azure-cli
 ```
 
 **Windows (Chocolatey):**
