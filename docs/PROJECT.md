@@ -49,7 +49,7 @@ Cargo workspace with two members:
 
 | Crate | Version | Purpose |
 |---|---|---|
-| `mockall` | 0.12 | Trait-based test mocking |
+| `mockall` | 0.12 (optional, via `test-support` feature) | Trait-based test mocking for `MockAzureDevOpsApi`; required for integration tests |
 
 ### Codegen Crate (`mcp-tools-codegen`)
 
@@ -106,8 +106,10 @@ MCP tool responses are optimized for LLM consumption:
 | `make build` | `cargo build` (debug) |
 | `make release` | `cargo build --release` |
 | `make check` | `cargo check` |
-| `make test` | `cargo test` |
-| `make lint` | `cargo clippy -- -D warnings` |
+| `make test` | `cargo test --features test-support` (unit + integration tests; see below) |
+| `make lint` | `cargo clippy --features test-support -- -D warnings` |
+
+**test-support feature**: `mockall` and integration tests require the `test-support` feature because `cfg(test)` is not active when the library is built as a dependency for `tests/*.rs`. Without `--features test-support`, `cargo test` skips integration tests. Always use `make test` for the full suite.
 | `make fmt` | `cargo fmt` |
 | `make clean` | `cargo clean` |
 | `make all` | `fmt` → `lint` → `test` → `build` |

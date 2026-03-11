@@ -214,8 +214,8 @@ This project uses specialized subagents (defined in `.claude/agents/`) to enforc
 - Build (debug): `make build` (runs `cargo build`)
 - Build (release): `make release` (runs `cargo build --release`)
 - Check compilation: `make check` (runs `cargo check`)
-- Run all tests: `make test` (runs `cargo test`)
-- Lint: `make lint` (runs `cargo clippy -- -D warnings`)
+- Run all tests: `make test` (runs `cargo test --features test-support`). The `test-support` feature enables `mockall` and integration tests; without it, `cargo test` skips integration tests because `MockAzureDevOpsApi` is not generated when the library is compiled as a dependency.
+- Lint: `make lint` (runs `cargo clippy --features test-support -- -D warnings`)
 - Format: `make fmt` (runs `cargo fmt`)
 - All quality gates: `make all` (runs `fmt` → `lint` → `test` → `build`)
 - Clean: `make clean` (runs `cargo clean`)
@@ -251,6 +251,7 @@ This project uses specialized subagents (defined in `.claude/agents/`) to enforc
 - `AzureDevOpsApi` is defined in `src/azure/api_trait.rs` with `#[cfg_attr(feature = "test-support", mockall::automock)]`.
 - `AzureDevOpsClient` implements the trait by delegating to the standalone API functions.
 - Integration tests use `MockAzureDevOpsApi` (enabled via `test-support` feature) to verify tool behavior without external services.
+- **Why `test-support` feature?** `cfg(test)` is not active when the library is built as a dependency for integration tests (`tests/*.rs`), so `#[cfg_attr(test, mockall::automock)]` would never generate `MockAzureDevOpsApi`. A Cargo feature ensures the mock is generated whenever tests are run. Always use `make test` or `cargo test --features test-support` to run the full suite.
 
 ### Dependency injection
 - Pass dependencies explicitly via constructor parameters (`new()`).

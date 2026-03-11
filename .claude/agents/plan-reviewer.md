@@ -85,6 +85,7 @@ Review the ENTIRE plan across five dimensions: **Structure & Ordering**, **QA Ad
   - `assert!`, `assert_eq!`, `assert_ne!` with messages.
   - `mockall` for trait-based mocking where applicable.
 - You MUST verify: integration tests (when planned) use mock servers and test utilities (not real external services).
+- **test-support feature**: Integration tests in `tests/*.rs` use `MockAzureDevOpsApi`. That mock is generated only when `test-support` is enabled (because `cfg(test)` is not active for the library when built as a dep for integration tests). Plans MUST use `make test` / `cargo test --features test-support` and MUST NOT assume plain `cargo test` runs integration tests.
 
 ### Linting Suppression — CRITICAL
 
