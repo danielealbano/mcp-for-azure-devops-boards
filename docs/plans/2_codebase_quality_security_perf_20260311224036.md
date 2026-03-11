@@ -782,7 +782,7 @@ Also modify the existing macOS step to clean up the intermediate file after tarr
 
 ### Acceptance Criteria
 
-- [ ] Tests cover empty arrays, empty objects, Unicode, control characters, deeply nested values, long strings
+- [x] Tests cover empty arrays, empty objects, Unicode, control characters, deeply nested values, long strings
 
 ---
 
@@ -804,7 +804,7 @@ Also modify the existing macOS step to clean up the intermediate file after tarr
 
 **DoD**:
 
-- [ ] All 9 test cases added and passing
+- [x] All 9 test cases added and passing
 
 ---
 
@@ -812,8 +812,8 @@ Also modify the existing macOS step to clean up the intermediate file after tarr
 
 ### Acceptance Criteria
 
-- [ ] Every MCP tool has at least one error-propagation test
-- [ ] Every MCP tool has at least one content-verification test
+- [x] Every MCP tool has at least one error-propagation test
+- [x] Every MCP tool has at least one content-verification test
 
 ---
 
@@ -891,8 +891,8 @@ Existing: `test_get_work_item_api_error_propagates`.
 
 **DoD**:
 
-- [ ] 25 error-propagation tests total (1 existing + 24 new)
-- [ ] All tests pass
+- [x] 25 error-propagation tests total (1 existing + 24 new)
+- [x] All tests pass
 
 ---
 
@@ -969,9 +969,9 @@ Use `extract_text_from_result` to check actual content structure. Strip `UNTRUST
 
 **DoD**:
 
-- [ ] All content verification tests pass
-- [ ] Tests verify actual data structure (CSV headers, field presence, expected values)
-- [ ] No duplicate coverage with existing tests
+- [x] All content verification tests pass
+- [x] Tests verify actual data structure (CSV headers, field presence, expected values)
+- [x] No duplicate coverage with existing tests
 
 ---
 
@@ -979,8 +979,8 @@ Use `extract_text_from_result` to check actual content structure. Strip `UNTRUST
 
 ### Acceptance Criteria
 
-- [ ] HTTP server integration test that starts server, makes request, verifies response
-- [ ] CLI argument parsing tests for all flags
+- [x] HTTP server integration test that starts server, makes request, verifies response
+- [x] CLI argument parsing tests for all flags
 
 ---
 
@@ -999,8 +999,8 @@ Setup: Create `AzureMcpServer` with `MockAzureDevOpsApi`, bind `TcpListener` to 
 
 **DoD**:
 
-- [ ] Tests start actual HTTP server and make real HTTP requests
-- [ ] Tests clean up server task
+- [x] Tests start actual HTTP server and make real HTTP requests
+- [x] Tests clean up server task
 
 ---
 
@@ -1036,8 +1036,8 @@ mod tests {
 
 **DoD**:
 
-- [ ] 4 CLI parsing tests pass
-- [ ] All tests use `Args::try_parse_from(...)` for isolated parsing
+- [x] 4 CLI parsing tests pass
+- [x] All tests use `Args::try_parse_from(...)` for isolated parsing
 
 ---
 

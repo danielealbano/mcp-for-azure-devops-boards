@@ -144,4 +144,84 @@ mod tests {
         assert!(result.contains("bool_false:false"));
         assert!(result.contains("number:42.5"));
     }
+
+    #[test]
+    fn test_empty_object() {
+        use serde_json::json;
+        let data = json!({});
+        let result = to_compact_string(&data).unwrap();
+        assert_eq!(result, "{}");
+    }
+
+    #[test]
+    fn test_empty_array() {
+        let data: Vec<String> = vec![];
+        let result = to_compact_string(&data).unwrap();
+        assert_eq!(result, "[]");
+    }
+
+    #[test]
+    fn test_unicode_strings() {
+        use serde_json::json;
+        let data = json!({"cjk": "日本語", "emoji": "🦀🔥", "accented": "café résumé"});
+        let result = to_compact_string(&data).unwrap();
+        assert!(result.contains("cjk:日本語"));
+        assert!(result.contains("emoji:🦀🔥"));
+        assert!(result.contains("accented:café résumé"));
+    }
+
+    #[test]
+    fn test_control_characters() {
+        use serde_json::json;
+        let data = json!({"tab": "a\tb", "null": "a\0b"});
+        let result = to_compact_string(&data).unwrap();
+        assert!(result.contains("tab:a\tb"));
+        assert!(result.contains("null:a\0b"));
+    }
+
+    #[test]
+    fn test_deeply_nested_object() {
+        use serde_json::json;
+        let mut value = json!("leaf");
+        for _ in 0..64 {
+            value = json!({"n": value});
+        }
+        let result = to_compact_string(&value).unwrap();
+        assert!(result.contains("leaf"));
+        assert!(!result.contains("..."));
+    }
+
+    #[test]
+    fn test_beyond_max_depth() {
+        use serde_json::json;
+        let mut value = json!("leaf");
+        for _ in 0..66 {
+            value = json!({"n": value});
+        }
+        let result = to_compact_string(&value).unwrap();
+        assert!(result.contains("..."));
+    }
+
+    #[test]
+    fn test_long_string() {
+        let long = "a".repeat(10000);
+        let result = to_compact_string(&long).unwrap();
+        assert_eq!(result.len(), 10000);
+    }
+
+    #[test]
+    fn test_empty_string_value() {
+        use serde_json::json;
+        let data = json!({"key": ""});
+        let result = to_compact_string(&data).unwrap();
+        assert_eq!(result, "{key:}");
+    }
+
+    #[test]
+    fn test_mixed_array() {
+        use serde_json::json;
+        let data = json!([null, true, 42, "hello", {"k": "v"}]);
+        let result = to_compact_string(&data).unwrap();
+        assert_eq!(result, "[null,true,42,hello,{k:v}]");
+    }
 }

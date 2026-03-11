@@ -7,7 +7,7 @@ use rmcp::transport::stdio;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Args {
+pub(crate) struct Args {
     /// Run in server mode
     #[arg(long)]
     server: bool,
@@ -36,4 +36,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::Parser;
+
+    #[test]
+    fn test_default_args() {
+        let args = Args::try_parse_from(["test"]).unwrap();
+        assert!(!args.server);
+        assert_eq!(args.port, 3000);
+    }
+
+    #[test]
+    fn test_server_flag() {
+        let args = Args::try_parse_from(["test", "--server"]).unwrap();
+        assert!(args.server);
+        assert_eq!(args.port, 3000);
+    }
+
+    #[test]
+    fn test_custom_port() {
+        let args = Args::try_parse_from(["test", "--port", "8080"]).unwrap();
+        assert!(!args.server);
+        assert_eq!(args.port, 8080);
+    }
+
+    #[test]
+    fn test_server_with_port() {
+        let args = Args::try_parse_from(["test", "--server", "--port", "8080"]).unwrap();
+        assert!(args.server);
+        assert_eq!(args.port, 8080);
+    }
 }
