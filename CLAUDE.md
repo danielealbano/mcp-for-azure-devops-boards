@@ -37,7 +37,7 @@ When implementing changes:
 - You MUST ALWAYS include tests (unit or e2e), implementing new ones or updating the existing ones.
 - Keep diffs minimal and consistent with existing style.
 - You MUST verify ALWAYS that there are NO lint warnings or errors and that there are NO build warnings or errors. **Exception**: during plan workflows, linting, formatting, and tests run ONLY at the end of the entire plan (see "When implementing a plan" below).
-- Use `make lint` which runs `cargo clippy -- -D warnings`.
+- Use `make lint` which runs `cargo clippy --features test-support -- -D warnings`.
 
 When uncertain:
 - You MUST ask targeted questions that unblock implementation quickly.
@@ -186,7 +186,7 @@ This project uses specialized subagents (defined in `.claude/agents/`) to enforc
 ### A change **MUST** be considered DONE **ONLY AND ONLY** if all are true: — ABSOLUTE RULE
 
 - All relevant automated tests are written AND passing (unit, integration as appropriate).
-- No linting warnings/errors (`cargo clippy -- -D warnings`).
+- No linting warnings/errors (`cargo clippy --features test-support -- -D warnings`).
 - The project builds without errors and without warnings (`cargo build` succeeds).
 - No TODOs, no commented-out dead code, no "temporary hacks".
 - Changes are small, readable, and aligned with existing Rust patterns.
@@ -243,7 +243,7 @@ This project uses specialized subagents (defined in `.claude/agents/`) to enforc
 ### Trait-based design and testability
 - Define traits for components that touch external systems (HTTP clients, Azure DevOps API) to enable mocking in tests.
 - Use `#[async_trait]` for async trait methods.
-- Use `mockall` (in dev-dependencies) for generating mock implementations.
+- Use `mockall` (optional dependency, enabled via `test-support` feature) for generating mock implementations.
 - Keep traits small (1–3 methods). Prefer composing small traits over large ones.
 
 ### AzureDevOpsApi trait
@@ -293,7 +293,7 @@ You MUST:
     - `teams.rs` — Teams API.
     - `work_items.rs` — Work items API (CRUD, WIQL queries, comments, links). Batched fetching (200 per batch, 1000 max).
   - **`src/mcp/`**: MCP server layer.
-    - `server.rs` — `AzureMcpServer` struct (wraps `Arc<AzureDevOpsClient>` + `ToolRouter`), `ServerHandler` impl, includes `generated_tools.rs` via `include!()`.
+    - `server.rs` — `AzureMcpServer` struct (wraps `Arc<dyn AzureDevOpsApi>` + `ToolRouter`), `ServerHandler` impl, includes `generated_tools.rs` via `include!()`.
     - `tools/` — MCP tool implementations, one file per tool. Each uses `#[mcp_tool(name, description)]` attribute.
       - `organizations/` — `list_organizations`, `get_current_user`
       - `projects/` — `list_projects`
@@ -348,7 +348,7 @@ You MUST:
 
 ### Async task management
 - The server uses `tokio::spawn` for per-connection tasks in HTTP mode.
-- `AzureMcpServer` is `Clone` (wraps `Arc<AzureDevOpsClient>` + `ToolRouter<Self>`), safe to share across tasks.
+- `AzureMcpServer` is `Clone` (wraps `Arc<dyn AzureDevOpsApi>` + `ToolRouter<Self>`), safe to share across tasks.
 - `reqwest::Client` is internally `Arc`'d and connection-pooled — safe to clone and share.
 - Never spawn fire-and-forget tasks in production code without a clear shutdown path.
 - Never block in async context — use `tokio::task::spawn_blocking` if needed.
@@ -402,7 +402,7 @@ fn test_parse_listen_url_variants() {
 ### Unit tests
 - Unit tests MUST be fast (no I/O, no network, no external services).
 - Use traits and dependency injection to mock external dependencies.
-- Use `mockall` (in dev-dependencies) for trait-based mock generation.
+- Use `mockall` (optional dependency, enabled via `test-support` feature) for trait-based mock generation.
 - For assertions, use `assert!`, `assert_eq!`, `assert_ne!` macros. Use descriptive messages.
 - Use `tempfile` crate for filesystem-dependent tests.
 - **What unit tests cover in this project**:
@@ -420,7 +420,7 @@ fn test_parse_listen_url_variants() {
 
 ### Mocking
 - Use traits for all external boundaries so they can be mocked in tests.
-- Use `mockall` (already in dev-dependencies) for generating mock implementations.
+- Use `mockall` (optional dependency, enabled via `test-support` feature) for generating mock implementations.
 - For simple cases, prefer hand-written mock structs implementing the trait.
 - Never mock what you don't own in unit tests — wrap third-party clients behind your own trait first.
 
@@ -462,7 +462,7 @@ fn test_parse_listen_url_variants() {
 | `hyper` + `hyper-util` + `tower` | HTTP server transport layer |
 | `log` + `env_logger` | Logging facade + env-based backend |
 | `schemars` | JSON Schema generation for MCP tool parameters |
-| `mockall` | Trait-based test mocking (dev-dependency) |
+| `mockall` | Trait-based test mocking (optional, via `test-support` feature) |
 
 ---
 
