@@ -8,11 +8,9 @@ use rmcp::transport::streamable_http_server::{
     StreamableHttpService, session::local::LocalSessionManager,
 };
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::sync::Semaphore;
 
 const MAX_CONNECTIONS: usize = 256;
-const CONNECTION_TIMEOUT: Duration = Duration::from_secs(60);
 
 pub async fn run_server(
     server: AzureMcpServer,
@@ -39,16 +37,11 @@ pub async fn run_server(
         let service = service.clone();
 
         tokio::spawn(async move {
-            let result = tokio::time::timeout(
-                CONNECTION_TIMEOUT,
-                Builder::new(TokioExecutor::default()).serve_connection(io, service),
-            )
-            .await;
-
-            match result {
-                Ok(Ok(())) => {}
-                Ok(Err(err)) => log::error!("Error serving connection: {:?}", err),
-                Err(_) => log::warn!("Connection timed out after {:?}", CONNECTION_TIMEOUT),
+            if let Err(err) = Builder::new(TokioExecutor::default())
+                .serve_connection(io, service)
+                .await
+            {
+                log::error!("Error serving connection: {:?}", err);
             }
 
             drop(permit);

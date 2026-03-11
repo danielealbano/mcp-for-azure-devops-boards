@@ -1,7 +1,6 @@
 use crate::azure::client::{AzureDevOpsClient, AzureError};
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Team {
@@ -116,27 +115,6 @@ pub struct BoardDetail {
     #[serde(default)]
     pub fields: Option<BoardFields>,
     // Skipping _links as it's not needed
-}
-
-impl BoardDetail {
-    /// Extract work item types from the board's allowed mappings
-    pub fn get_work_item_types(&self) -> Vec<String> {
-        let mut types = HashSet::new();
-
-        if let Some(mappings) = &self.allowed_mappings
-            && let Some(obj) = mappings.as_object()
-        {
-            for (_column_type, type_mappings) in obj {
-                if let Some(type_obj) = type_mappings.as_object() {
-                    for (work_item_type, _states) in type_obj {
-                        types.insert(work_item_type.clone());
-                    }
-                }
-            }
-        }
-
-        types.into_iter().collect()
-    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
