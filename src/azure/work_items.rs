@@ -197,15 +197,37 @@ pub async fn add_comment(
     project: &str,
     work_item_id: u32,
     text: &str,
+    format: &str,
 ) -> Result<Value, AzureError> {
+    let encoded_format = urlencoding::encode(format);
     let path = format!(
-        "wit/workitems/{}/comments?api-version=7.1-preview.3",
-        work_item_id
+        "wit/workitems/{}/comments?api-version=7.2-preview.4&format={}",
+        work_item_id, encoded_format
     );
     let body = serde_json::json!({
         "text": text
     });
     client.post(organization, project, &path, &body).await
+}
+
+pub async fn update_comment(
+    client: &AzureDevOpsClient,
+    organization: &str,
+    project: &str,
+    work_item_id: u32,
+    comment_id: u32,
+    text: &str,
+    format: &str,
+) -> Result<Value, AzureError> {
+    let encoded_format = urlencoding::encode(format);
+    let path = format!(
+        "wit/workitems/{}/comments/{}?api-version=7.2-preview.4&format={}",
+        work_item_id, comment_id, encoded_format
+    );
+    let body = serde_json::json!({
+        "text": text
+    });
+    client.patch(organization, project, &path, &body).await
 }
 
 pub async fn link_work_items(

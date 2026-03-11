@@ -10,16 +10,18 @@ use rmcp::{
 };
 
 #[derive(Deserialize, JsonSchema)]
-pub struct AddCommentArgs {
+pub struct UpdateCommentArgs {
     /// AzDO org name
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub organization: String,
     /// AzDO project name
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub project: String,
-    /// Work item ID to add comment to
+    /// Work item ID the comment belongs to
     pub work_item_id: u32,
-    /// Comment text (use markdown syntax when format is "markdown", HTML tags when format is "html")
+    /// Comment ID to update
+    pub comment_id: u32,
+    /// Updated comment text (use markdown syntax when format is "markdown", HTML tags when format is "html")
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub text: String,
     /// Comment format: "markdown" or "html" (default: "markdown")
@@ -28,12 +30,12 @@ pub struct AddCommentArgs {
 }
 
 #[mcp_tool(
-    name = "azdo_add_comment",
-    description = "Add a comment to a work item"
+    name = "azdo_update_comment",
+    description = "Update a comment on a work item"
 )]
-pub async fn add_comment(
+pub async fn update_comment(
     client: &AzureDevOpsClient,
-    args: AddCommentArgs,
+    args: UpdateCommentArgs,
 ) -> Result<CallToolResult, McpError> {
     let format = args.format.to_lowercase();
     if format != "markdown" && format != "html" {
@@ -45,17 +47,19 @@ pub async fn add_comment(
     }
 
     log::info!(
-        "Tool invoked: azdo_add_comment(work_item_id={}, text_length={}, format={})",
+        "Tool invoked: azdo_update_comment(work_item_id={}, comment_id={}, text_length={}, format={})",
         args.work_item_id,
+        args.comment_id,
         args.text.len(),
         format
     );
 
-    let result = work_items::add_comment(
+    let result = work_items::update_comment(
         client,
         &args.organization,
         &args.project,
         args.work_item_id,
+        args.comment_id,
         &args.text,
         &format,
     )
@@ -79,66 +83,75 @@ pub async fn add_comment(
 mod tests {
     use super::*;
 
-    fn deserialize_args(json: &str) -> Result<AddCommentArgs, serde_json::Error> {
+    fn deserialize_args(json: &str) -> Result<UpdateCommentArgs, serde_json::Error> {
         serde_json::from_str(json)
     }
 
     #[test]
-    fn test_add_comment_args_format_defaults_to_markdown() {
+    fn test_update_comment_args_format_defaults_to_markdown() {
         let args = deserialize_args(
-            r#"{"organization":"org","project":"proj","work_item_id":1,"text":"hello"}"#,
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":"hello"}"#,
         )
         .unwrap();
         assert_eq!(args.format, "markdown");
     }
 
     #[test]
-    fn test_add_comment_args_format_accepts_html() {
+    fn test_update_comment_args_format_accepts_html() {
         let args = deserialize_args(
-            r#"{"organization":"org","project":"proj","work_item_id":1,"text":"hello","format":"html"}"#,
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":"hello","format":"html"}"#,
         )
         .unwrap();
         assert_eq!(args.format, "html");
     }
 
     #[test]
-    fn test_add_comment_args_format_accepts_markdown() {
+    fn test_update_comment_args_format_accepts_markdown() {
         let args = deserialize_args(
-            r#"{"organization":"org","project":"proj","work_item_id":1,"text":"hello","format":"markdown"}"#,
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":"hello","format":"markdown"}"#,
         )
         .unwrap();
         assert_eq!(args.format, "markdown");
     }
 
     #[test]
-    fn test_add_comment_args_rejects_empty_text() {
+    fn test_update_comment_args_rejects_empty_text() {
         let result = deserialize_args(
-            r#"{"organization":"org","project":"proj","work_item_id":1,"text":""}"#,
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":""}"#,
         );
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_add_comment_args_rejects_whitespace_only_text() {
+    fn test_update_comment_args_rejects_whitespace_only_text() {
         let result = deserialize_args(
-            r#"{"organization":"org","project":"proj","work_item_id":1,"text":"   "}"#,
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":"   "}"#,
         );
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_add_comment_args_rejects_empty_organization() {
+    fn test_update_comment_args_rejects_empty_organization() {
         let result = deserialize_args(
-            r#"{"organization":"","project":"proj","work_item_id":1,"text":"hello"}"#,
+            r#"{"organization":"","project":"proj","work_item_id":1,"comment_id":42,"text":"hello"}"#,
         );
         assert!(result.is_err());
     }
 
     #[test]
-    fn test_add_comment_args_rejects_empty_project() {
+    fn test_update_comment_args_rejects_empty_project() {
         let result = deserialize_args(
-            r#"{"organization":"org","project":"","work_item_id":1,"text":"hello"}"#,
+            r#"{"organization":"org","project":"","work_item_id":1,"comment_id":42,"text":"hello"}"#,
         );
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_update_comment_args_comment_id_is_u32() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":4294967295,"text":"hello"}"#,
+        )
+        .unwrap();
+        assert_eq!(args.comment_id, u32::MAX);
     }
 }
