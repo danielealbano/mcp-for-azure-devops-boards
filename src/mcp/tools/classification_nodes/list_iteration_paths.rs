@@ -1,4 +1,4 @@
-use crate::azure::{classification_nodes, client::AzureDevOpsClient, iterations};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
@@ -29,7 +29,7 @@ pub struct ListIterationPathsArgs {
     description = "List iteration paths for a project or team"
 )]
 pub async fn list_iteration_paths(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListIterationPathsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_iteration_paths");
@@ -51,19 +51,19 @@ pub async fn list_iteration_paths(
 
     // If team_id is provided, use team-specific iterations
     if let Some(team_id) = &args.team_id {
-        let mut iterations = iterations::get_team_iterations(
-            client,
-            &args.organization,
-            &args.project,
-            team_id,
-            None, // Get all iterations first
-        )
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
+        let mut iterations = client
+            .get_team_iterations(
+                &args.organization,
+                &args.project,
+                team_id,
+                None, // Get all iterations first
+            )
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
 
         // Filter by timeframe if provided (post-acquisition filtering)
         if let Some(ref timeframe) = args.timeframe {
@@ -106,19 +106,19 @@ pub async fn list_iteration_paths(
         }
     } else {
         // Use project-level classification nodes
-        let root_node = classification_nodes::list_iteration_paths(
-            client,
-            &args.organization,
-            &args.project,
-            None,
-            10, // depth
-        )
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
+        let root_node = client
+            .list_iteration_paths(
+                &args.organization,
+                &args.project,
+                None,
+                10, // depth
+            )
+            .await
+            .map_err(|e| McpError {
+                code: ErrorCode(-32000),
+                message: e.to_string().into(),
+                data: None,
+            })?;
 
         // Flatten the tree into a list of paths and return as CSV
         let mut paths = Vec::new();

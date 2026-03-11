@@ -1,4 +1,4 @@
-use crate::azure::{boards, client::AzureDevOpsClient};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{
     board_columns_to_csv, deserialize_non_empty_string, tool_text_success,
 };
@@ -26,7 +26,7 @@ pub struct ListBoardColumnsArgs {
 
 #[mcp_tool(name = "azdo_list_board_columns", description = "List board columns")]
 pub async fn list_board_columns(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListBoardColumnsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!(
@@ -34,19 +34,19 @@ pub async fn list_board_columns(
         args.team_id,
         args.board_id
     );
-    let columns = boards::list_board_columns(
-        client,
-        &args.organization,
-        &args.project,
-        &args.team_id,
-        &args.board_id,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let columns = client
+        .list_board_columns(
+            &args.organization,
+            &args.project,
+            &args.team_id,
+            &args.board_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     let csv_data = board_columns_to_csv(&columns).map_err(|e| McpError {
         code: ErrorCode(-32000),

@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{
     deserialize_non_empty_string, simplify_work_item_json, tool_text_success, work_items_to_csv,
 };
@@ -30,7 +30,7 @@ pub struct GetWorkItemsArgs {
     description = "Get multiple work items by IDs"
 )]
 pub async fn get_work_items(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: GetWorkItemsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_get_work_items(ids={:?})", args.ids);
@@ -40,19 +40,19 @@ pub async fn get_work_items(
     }
 
     let ids: Vec<u32> = args.ids.iter().map(|&id| id as u32).collect();
-    let work_items = work_items::get_work_items(
-        client,
-        &args.organization,
-        &args.project,
-        &ids,
-        args.include_latest_n_comments,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let work_items = client
+        .get_work_items(
+            &args.organization,
+            &args.project,
+            &ids,
+            args.include_latest_n_comments,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     if work_items.is_empty() {
         return Ok(tool_text_success("No work items found"));

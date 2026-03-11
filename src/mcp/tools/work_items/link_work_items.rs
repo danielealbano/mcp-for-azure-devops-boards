@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::compact_llm;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
@@ -27,7 +27,7 @@ pub struct LinkWorkItemsArgs {
 
 #[mcp_tool(name = "azdo_link_work_items", description = "Link work items")]
 pub async fn link_work_items(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: LinkWorkItemsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!(
@@ -47,20 +47,20 @@ pub async fn link_work_items(
         _ => &args.link_type, // Use as-is if not a known friendly name
     };
 
-    let result = work_items::link_work_items(
-        client,
-        &args.organization,
-        &args.project,
-        args.source_id,
-        args.target_id,
-        link_type_ref,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let result = client
+        .link_work_items(
+            &args.organization,
+            &args.project,
+            args.source_id,
+            args.target_id,
+            link_type_ref,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     Ok(tool_text_success(
         compact_llm::to_compact_string(&result).unwrap(),

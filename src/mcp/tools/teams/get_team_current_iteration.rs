@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, iterations};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
@@ -25,7 +25,7 @@ pub struct GetTeamCurrentIterationArgs {
     description = "Get current iteration/sprint for team"
 )]
 pub async fn get_team_current_iteration(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: GetTeamCurrentIterationArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!(
@@ -33,18 +33,14 @@ pub async fn get_team_current_iteration(
         args.team_id
     );
 
-    let iteration = iterations::get_team_current_iteration(
-        client,
-        &args.organization,
-        &args.project,
-        &args.team_id,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let iteration = client
+        .get_team_current_iteration(&args.organization, &args.project, &args.team_id)
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     match iteration {
         Some(iteration) => {

@@ -1,4 +1,4 @@
-use crate::azure::{boards, client::AzureDevOpsClient};
+use crate::azure::api_trait::AzureDevOpsApi;
 
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
@@ -21,11 +21,12 @@ pub struct ListTeamsArgs {
 
 #[mcp_tool(name = "azdo_list_teams", description = "List teams in the project")]
 pub async fn list_teams(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListTeamsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_teams");
-    let teams = boards::list_teams(client, &args.organization, &args.project)
+    let teams = client
+        .list_teams(&args.organization, &args.project)
         .await
         .map_err(|e| McpError {
             code: ErrorCode(-32000),

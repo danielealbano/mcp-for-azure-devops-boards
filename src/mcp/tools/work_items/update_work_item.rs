@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::compact_llm;
 use crate::mcp::tools::support::{
     default_text_format, deserialize_non_empty_string, simplify_work_item_json, tool_text_success,
@@ -109,7 +109,7 @@ pub struct UpdateWorkItemArgs {
 
 #[mcp_tool(name = "azdo_update_work_item", description = "Update work item")]
 pub async fn update_work_item(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: UpdateWorkItemArgs,
 ) -> Result<CallToolResult, McpError> {
     let format = args.format.to_lowercase();
@@ -130,16 +130,22 @@ pub async fn update_work_item(
     );
 
     // Build multiline fields format list for large text fields
-    let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+    let mut multiline_formats: Vec<(String, String)> = Vec::new();
     if format == "markdown" {
         if args.description.is_some() {
-            multiline_formats.push(("System.Description", "Markdown"));
+            multiline_formats.push(("System.Description".to_string(), "Markdown".to_string()));
         }
         if args.acceptance_criteria.is_some() {
-            multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+            multiline_formats.push((
+                "Microsoft.VSTS.Common.AcceptanceCriteria".to_string(),
+                "Markdown".to_string(),
+            ));
         }
         if args.repro_steps.is_some() {
-            multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+            multiline_formats.push((
+                "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                "Markdown".to_string(),
+            ));
         }
     }
 
@@ -260,25 +266,22 @@ pub async fn update_work_item(
         }
     }
 
-    let fields_vec: Vec<(&str, serde_json::Value)> = field_map
-        .iter()
-        .map(|(k, v)| (k.as_str(), v.clone()))
-        .collect();
+    let fields_vec: Vec<(String, serde_json::Value)> = field_map.into_iter().collect();
 
-    let work_item = work_items::update_work_item(
-        client,
-        &args.organization,
-        &args.project,
-        args.id,
-        &fields_vec,
-        &multiline_formats,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let work_item = client
+        .update_work_item(
+            &args.organization,
+            &args.project,
+            args.id,
+            &fields_vec,
+            &multiline_formats,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     // Convert to JSON value, simplify, then serialize
     let mut json_value = serde_json::to_value(&work_item).unwrap();
@@ -376,28 +379,43 @@ mod tests {
         .unwrap();
 
         let format = args.format.to_lowercase();
-        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        let mut multiline_formats: Vec<(String, String)> = Vec::new();
         if format == "markdown" {
             if args.description.is_some() {
-                multiline_formats.push(("System.Description", "Markdown"));
+                multiline_formats.push(("System.Description".to_string(), "Markdown".to_string()));
             }
             if args.acceptance_criteria.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.Common.AcceptanceCriteria".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
             if args.repro_steps.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
         }
 
         assert_eq!(multiline_formats.len(), 3);
-        assert_eq!(multiline_formats[0], ("System.Description", "Markdown"));
+        assert_eq!(
+            multiline_formats[0],
+            ("System.Description".to_string(), "Markdown".to_string())
+        );
         assert_eq!(
             multiline_formats[1],
-            ("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown")
+            (
+                "Microsoft.VSTS.Common.AcceptanceCriteria".to_string(),
+                "Markdown".to_string()
+            )
         );
         assert_eq!(
             multiline_formats[2],
-            ("Microsoft.VSTS.TCM.ReproSteps", "Markdown")
+            (
+                "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                "Markdown".to_string()
+            )
         );
     }
 
@@ -409,16 +427,22 @@ mod tests {
         .unwrap();
 
         let format = args.format.to_lowercase();
-        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        let mut multiline_formats: Vec<(String, String)> = Vec::new();
         if format == "markdown" {
             if args.description.is_some() {
-                multiline_formats.push(("System.Description", "Markdown"));
+                multiline_formats.push(("System.Description".to_string(), "Markdown".to_string()));
             }
             if args.acceptance_criteria.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.Common.AcceptanceCriteria".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
             if args.repro_steps.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
         }
 
@@ -433,23 +457,32 @@ mod tests {
         .unwrap();
 
         let format = args.format.to_lowercase();
-        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        let mut multiline_formats: Vec<(String, String)> = Vec::new();
         if format == "markdown" {
             if args.description.is_some() {
-                multiline_formats.push(("System.Description", "Markdown"));
+                multiline_formats.push(("System.Description".to_string(), "Markdown".to_string()));
             }
             if args.acceptance_criteria.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.Common.AcceptanceCriteria".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
             if args.repro_steps.is_some() {
-                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+                multiline_formats.push((
+                    "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                    "Markdown".to_string(),
+                ));
             }
         }
 
         assert_eq!(multiline_formats.len(), 1);
         assert_eq!(
             multiline_formats[0],
-            ("Microsoft.VSTS.TCM.ReproSteps", "Markdown")
+            (
+                "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                "Markdown".to_string()
+            )
         );
     }
 }

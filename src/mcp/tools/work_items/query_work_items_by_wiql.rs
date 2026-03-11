@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{
     deserialize_non_empty_string, simplify_work_item_json, tool_text_success, work_items_to_csv,
 };
@@ -30,26 +30,26 @@ pub struct QueryWorkItemsArgsWiql {
     description = "Query work items using WIQL"
 )]
 pub async fn query_work_items_by_wiql(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: QueryWorkItemsArgsWiql,
 ) -> Result<CallToolResult, McpError> {
     log::info!(
         "Tool invoked: azdo_query_work_items_by_wiql(query={})",
         args.query
     );
-    let items = work_items::query_work_items(
-        client,
-        &args.organization,
-        &args.project,
-        &args.query,
-        args.include_latest_n_comments,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let items = client
+        .query_work_items(
+            &args.organization,
+            &args.project,
+            &args.query,
+            args.include_latest_n_comments,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     if items.is_empty() {
         return Ok(tool_text_success("No work items found"));

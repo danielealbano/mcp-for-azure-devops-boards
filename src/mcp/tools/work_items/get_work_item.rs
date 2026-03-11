@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::{
     deserialize_non_empty_string, simplify_work_item_json, tool_text_success, work_items_to_csv,
 };
@@ -27,23 +27,23 @@ pub struct GetWorkItemArgs {
 
 #[mcp_tool(name = "azdo_get_work_item", description = "Get work item by ID")]
 pub async fn get_work_item(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: GetWorkItemArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_get_work_item(id={})", args.id);
-    let work_item = work_items::get_work_item(
-        client,
-        &args.organization,
-        &args.project,
-        args.id as u32,
-        args.include_latest_n_comments,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let work_item = client
+        .get_work_item(
+            &args.organization,
+            &args.project,
+            args.id as u32,
+            args.include_latest_n_comments,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     match work_item {
         Some(work_item) => {

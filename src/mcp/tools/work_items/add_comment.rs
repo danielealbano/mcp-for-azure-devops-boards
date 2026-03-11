@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, work_items};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::compact_llm;
 use crate::mcp::tools::support::{
     default_text_format, deserialize_non_empty_string, tool_text_success,
@@ -34,7 +34,7 @@ pub struct AddCommentArgs {
     description = "Add a comment to a work item"
 )]
 pub async fn add_comment(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: AddCommentArgs,
 ) -> Result<CallToolResult, McpError> {
     let format = args.format.to_lowercase();
@@ -53,20 +53,20 @@ pub async fn add_comment(
         format
     );
 
-    let result = work_items::add_comment(
-        client,
-        &args.organization,
-        &args.project,
-        args.work_item_id,
-        &args.text,
-        &format,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let result = client
+        .add_comment(
+            &args.organization,
+            &args.project,
+            args.work_item_id,
+            &args.text,
+            &format,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     let output = compact_llm::to_compact_string(&result).map_err(|e| McpError {
         code: ErrorCode(-32000),

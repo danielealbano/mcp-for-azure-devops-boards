@@ -1,3 +1,4 @@
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::azure::client::AzureDevOpsClient;
 use rmcp::{
     handler::server::router::tool::ToolRouter,
@@ -8,7 +9,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct AzureMcpServer {
-    client: Arc<AzureDevOpsClient>,
+    client: Arc<dyn AzureDevOpsApi + Send + Sync>,
     tool_router: ToolRouter<Self>,
 }
 
