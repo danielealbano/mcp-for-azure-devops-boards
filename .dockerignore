@@ -1,0 +1,11 @@
+target
+.claude/
+.vscode/
+.github/
+docs/
+**/node_modules
+**/dist
+**/coverage
+*.log
+Dockerfile
+docker-compose.yml
