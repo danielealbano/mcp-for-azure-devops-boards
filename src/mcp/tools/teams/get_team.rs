@@ -1,10 +1,10 @@
 use crate::azure::{boards, client::AzureDevOpsClient};
 
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -38,5 +38,5 @@ pub async fn get_team(
     let description = team.description.unwrap_or_default();
     let output = format!("{},{}", team.name, description);
 
-    Ok(CallToolResult::success(vec![Content::text(output)]))
+    Ok(tool_text_success(output))
 }

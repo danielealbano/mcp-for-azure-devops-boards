@@ -1,12 +1,12 @@
 use crate::azure::{client::AzureDevOpsClient, work_items};
 use crate::compact_llm;
 use crate::mcp::tools::support::{
-    default_text_format, deserialize_non_empty_string, simplify_work_item_json,
+    default_text_format, deserialize_non_empty_string, simplify_work_item_json, tool_text_success,
 };
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -336,9 +336,9 @@ pub async fn create_work_item(
     let mut json_value = serde_json::to_value(&work_item).unwrap();
     simplify_work_item_json(&mut json_value);
 
-    Ok(CallToolResult::success(vec![Content::text(
+    Ok(tool_text_success(
         compact_llm::to_compact_string(&json_value).unwrap(),
-    )]))
+    ))
 }
 
 #[cfg(test)]

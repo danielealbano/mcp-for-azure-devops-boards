@@ -1,10 +1,10 @@
 use crate::azure::{boards, client::AzureDevOpsClient};
 
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -36,7 +36,5 @@ pub async fn list_teams(
     // Extract just the team names for compact response
     let team_names: Vec<String> = teams.into_iter().map(|team| team.name).collect();
 
-    Ok(CallToolResult::success(vec![Content::text(
-        team_names.join(","),
-    )]))
+    Ok(tool_text_success(team_names.join(",")))
 }

@@ -1,9 +1,9 @@
 use crate::azure::{classification_nodes, client::AzureDevOpsClient};
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -59,7 +59,5 @@ pub async fn list_area_paths(
     collect_paths(&root_node, &mut paths);
 
     // Return as comma-separated list
-    Ok(CallToolResult::success(vec![Content::text(
-        paths.join(","),
-    )]))
+    Ok(tool_text_success(paths.join(",")))
 }

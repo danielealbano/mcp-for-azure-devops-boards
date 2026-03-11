@@ -1,8 +1,9 @@
 use crate::azure::{client::AzureDevOpsClient, organizations};
+use crate::mcp::tools::support::tool_text_success;
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -56,5 +57,5 @@ pub async fn get_current_user(
         data: None,
     })?;
 
-    Ok(CallToolResult::success(vec![Content::text(data)]))
+    Ok(tool_text_success(data))
 }

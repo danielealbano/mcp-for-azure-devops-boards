@@ -1,10 +1,10 @@
 use crate::azure::{client::AzureDevOpsClient, tags};
 
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -36,7 +36,5 @@ pub async fn list_tags(
     // Extract just the tag names for compact response
     let tag_names: Vec<String> = tags.into_iter().map(|tag| tag.name).collect();
 
-    Ok(CallToolResult::success(vec![Content::text(
-        tag_names.join(","),
-    )]))
+    Ok(tool_text_success(tag_names.join(",")))
 }

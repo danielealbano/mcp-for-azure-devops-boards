@@ -1,10 +1,12 @@
 use crate::azure::{client::AzureDevOpsClient, work_items};
 use crate::compact_llm;
-use crate::mcp::tools::support::{default_text_format, deserialize_non_empty_string};
+use crate::mcp::tools::support::{
+    default_text_format, deserialize_non_empty_string, tool_text_success,
+};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -72,7 +74,7 @@ pub async fn add_comment(
         data: None,
     })?;
 
-    Ok(CallToolResult::success(vec![Content::text(output)]))
+    Ok(tool_text_success(output))
 }
 
 #[cfg(test)]

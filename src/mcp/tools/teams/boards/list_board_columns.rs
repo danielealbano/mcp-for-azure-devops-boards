@@ -1,9 +1,11 @@
 use crate::azure::{boards, client::AzureDevOpsClient};
-use crate::mcp::tools::support::{board_columns_to_csv, deserialize_non_empty_string};
+use crate::mcp::tools::support::{
+    board_columns_to_csv, deserialize_non_empty_string, tool_text_success,
+};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -52,5 +54,5 @@ pub async fn list_board_columns(
         data: None,
     })?;
 
-    Ok(CallToolResult::success(vec![Content::text(csv_data)]))
+    Ok(tool_text_success(csv_data))
 }
