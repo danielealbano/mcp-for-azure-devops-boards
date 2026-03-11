@@ -240,7 +240,7 @@ graph LR
     CLIENT -->|"get_token()"| TOKEN
 ```
 
-- `AzureMcpServer` is `Clone` (wraps `Arc<AzureDevOpsClient>`)
+- `AzureMcpServer` is `Clone` (wraps `Arc<dyn AzureDevOpsApi>`)
 - Each HTTP connection gets a clone of `AzureMcpServer`
 - `AzureDevOpsClient` contains `reqwest::Client` (internally Arc'd, connection-pooled) and `Arc<DefaultAzureCredential>`
 - Bearer tokens are fetched per-request (credential SDK handles caching)
