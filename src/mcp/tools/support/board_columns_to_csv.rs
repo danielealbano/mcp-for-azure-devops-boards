@@ -6,12 +6,12 @@ pub fn board_columns_to_csv(columns: &[boards::BoardColumn]) -> Result<String, S
     let mut wtr = csv::Writer::from_writer(vec![]);
 
     // Write header
-    wtr.write_record(&["name", "item_limit", "is_split", "column_type"])
+    wtr.write_record(["name", "item_limit", "is_split", "column_type"])
         .map_err(|e| format!("Failed to write CSV header: {}", e))?;
 
     // Write rows
     for column in columns {
-        wtr.write_record(&[
+        wtr.write_record([
             &column.name,
             &column.item_limit.to_string(),
             &column.is_split.unwrap_or(false).to_string(),

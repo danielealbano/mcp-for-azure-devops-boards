@@ -39,10 +39,10 @@ fn scan_for_tools(dir: &Path) -> Vec<ToolInfo> {
                 tools.extend(scan_for_tools(&path));
             } else if path.extension().and_then(|s| s.to_str()) == Some("rs") {
                 // Parse Rust files for #[mcp_tool] attributes
-                if let Ok(content) = fs::read_to_string(&path) {
-                    if let Some(tool) = parse_mcp_tool_from_file(&content, &path) {
-                        tools.push(tool);
-                    }
+                if let Ok(content) = fs::read_to_string(&path)
+                    && let Some(tool) = parse_mcp_tool_from_file(&content, &path)
+                {
+                    tools.push(tool);
                 }
             }
         }
@@ -117,10 +117,10 @@ fn build_function_path(file_path: &Path, fn_name: &str) -> String {
         .collect();
 
     // Remove .rs extension from the last part
-    if let Some(last) = module_parts.last_mut() {
-        if last.ends_with(".rs") {
-            *last = last.trim_end_matches(".rs").to_string();
-        }
+    if let Some(last) = module_parts.last_mut()
+        && last.ends_with(".rs")
+    {
+        *last = last.trim_end_matches(".rs").to_string();
     }
 
     // Construct the full module path to the file
@@ -153,7 +153,9 @@ fn generate_tool_router_code(tools: &[ToolInfo]) -> String {
     code.push_str("use crate::mcp::tools::work_item_types::ListWorkItemTypesArgs;\n");
     code.push_str("use crate::mcp::tools::work_items::{\n");
     code.push_str("    AddCommentArgs, CreateWorkItemArgs, GetWorkItemArgs, GetWorkItemsArgs, LinkWorkItemsArgs,\n");
-    code.push_str("    QueryWorkItemsArgs, QueryWorkItemsArgsWiql, UpdateWorkItemArgs,\n");
+    code.push_str(
+        "    QueryWorkItemsArgs, QueryWorkItemsArgsWiql, UpdateCommentArgs, UpdateWorkItemArgs,\n",
+    );
     code.push_str("};\n");
     code.push_str("use rmcp::{\n");
     code.push_str("    ErrorData as McpError,\n");
