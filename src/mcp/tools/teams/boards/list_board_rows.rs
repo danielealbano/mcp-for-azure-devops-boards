@@ -1,10 +1,10 @@
 use crate::azure::{boards, client::AzureDevOpsClient};
 use crate::compact_llm;
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -56,7 +56,7 @@ pub async fn list_board_rows(
         .map(|row| row.name.unwrap_or_default())
         .collect();
 
-    Ok(CallToolResult::success(vec![Content::text(
+    Ok(tool_text_success(
         compact_llm::to_compact_string(&row_names).unwrap(),
-    )]))
+    ))
 }

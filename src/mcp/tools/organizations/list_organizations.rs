@@ -1,9 +1,10 @@
 use crate::azure::{client::AzureDevOpsClient, organizations};
+use crate::mcp::tools::support::tool_text_success;
 
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -39,7 +40,5 @@ pub async fn list_organizations(
     // Extract just the organization names for compact response
     let org_names: Vec<String> = orgs.into_iter().map(|org| org.account_name).collect();
 
-    Ok(CallToolResult::success(vec![Content::text(
-        org_names.join(","),
-    )]))
+    Ok(tool_text_success(org_names.join(",")))
 }

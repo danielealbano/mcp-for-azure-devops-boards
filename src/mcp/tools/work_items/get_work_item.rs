@@ -1,11 +1,11 @@
 use crate::azure::{client::AzureDevOpsClient, work_items};
 use crate::mcp::tools::support::{
-    deserialize_non_empty_string, simplify_work_item_json, work_items_to_csv,
+    deserialize_non_empty_string, simplify_work_item_json, tool_text_success, work_items_to_csv,
 };
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -56,10 +56,8 @@ pub async fn get_work_item(
                 data: None,
             })?;
 
-            Ok(CallToolResult::success(vec![Content::text(csv_output)]))
+            Ok(tool_text_success(csv_output))
         }
-        None => Ok(CallToolResult::success(vec![Content::text(
-            "Work item not found",
-        )])),
+        None => Ok(tool_text_success("Work item not found")),
     }
 }

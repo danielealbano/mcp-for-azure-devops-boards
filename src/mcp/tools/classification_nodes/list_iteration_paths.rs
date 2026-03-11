@@ -1,9 +1,9 @@
 use crate::azure::{classification_nodes, client::AzureDevOpsClient, iterations};
-use crate::mcp::tools::support::deserialize_non_empty_string;
+use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
-    model::{CallToolResult, Content, ErrorCode},
+    model::{CallToolResult, ErrorCode},
     schemars::{self, JsonSchema},
     serde::Deserialize,
 };
@@ -100,13 +100,9 @@ pub async fn list_iteration_paths(
         }
 
         if csv_lines.is_empty() {
-            Ok(CallToolResult::success(vec![Content::text(
-                "No iterations found",
-            )]))
+            Ok(tool_text_success("No iterations found"))
         } else {
-            Ok(CallToolResult::success(vec![Content::text(
-                csv_lines.join(","),
-            )]))
+            Ok(tool_text_success(csv_lines.join(",")))
         }
     } else {
         // Use project-level classification nodes
@@ -130,13 +126,9 @@ pub async fn list_iteration_paths(
 
         // Return as CSV format: path (single column for consistency)
         if paths.is_empty() {
-            Ok(CallToolResult::success(vec![Content::text(
-                "No iterations found",
-            )]))
+            Ok(tool_text_success("No iterations found"))
         } else {
-            Ok(CallToolResult::success(vec![Content::text(
-                paths.join(","),
-            )]))
+            Ok(tool_text_success(paths.join(",")))
         }
     }
 }

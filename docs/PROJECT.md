@@ -156,4 +156,4 @@ Each tool follows this pattern:
 2. Annotate the async function with `#[mcp_tool(name = "...", description = "...")]`.
 3. Function signature: `pub async fn tool_name(client: &AzureDevOpsClient, args: ArgsType) -> Result<CallToolResult, McpError>`.
 4. Convert domain errors to `McpError` via `.map_err()`.
-5. Return `CallToolResult::success(vec![Content::text(...)])`.
+5. Return `tool_text_success(content)` (from `support/tool_text_success.rs`) — this automatically prepends the anti-prompt-injection warning to all tool responses. Never use `CallToolResult::success(vec![Content::text(...)])` directly.
