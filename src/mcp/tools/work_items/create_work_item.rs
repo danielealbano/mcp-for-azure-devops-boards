@@ -22,9 +22,11 @@ pub struct CreateWorkItemArgs {
 
     // Required fields
     /// Type of work item (User Story, Epic, Feature, etc.)
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub work_item_type: String,
 
     /// Work item title
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub title: String,
 
     /// Format for large text fields (description, acceptance criteria, repro steps): "markdown" or "html" (default: "markdown")
@@ -334,13 +336,20 @@ pub async fn create_work_item(
             })?;
     }
 
-    // Convert to JSON value, simplify, then serialize
-    let mut json_value = serde_json::to_value(&work_item).unwrap();
+    let mut json_value = serde_json::to_value(&work_item).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
     simplify_work_item_json(&mut json_value);
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&json_value).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&json_value).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }
 
 #[cfg(test)]

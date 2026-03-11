@@ -55,7 +55,9 @@ impl AzureDevOpsClient {
         let token = self.get_token().await?;
         let url = format!(
             "https://dev.azure.com/{}/{}/_apis/{}",
-            organization, project, path
+            urlencoding::encode(organization),
+            urlencoding::encode(project),
+            path
         );
 
         log::debug!("Request: {} {}", method, url);
@@ -102,7 +104,11 @@ impl AzureDevOpsClient {
         body: Option<&(impl Serialize + ?Sized)>,
     ) -> Result<T, AzureError> {
         let token = self.get_token().await?;
-        let url = format!("https://dev.azure.com/{}/_apis/{}", organization, path);
+        let url = format!(
+            "https://dev.azure.com/{}/_apis/{}",
+            urlencoding::encode(organization),
+            path
+        );
 
         log::debug!("ORG Request: {} {}", method, url);
         if let Some(b) = &body
@@ -199,7 +205,10 @@ impl AzureDevOpsClient {
         let token = self.get_token().await?;
         let url = format!(
             "https://dev.azure.com/{}/{}/{}/_apis/{}",
-            organization, project, team, path
+            urlencoding::encode(organization),
+            urlencoding::encode(project),
+            urlencoding::encode(team),
+            path
         );
 
         log::debug!("TEAM Request: {} {}", method, url);
@@ -276,7 +285,9 @@ impl AzureDevOpsClient {
         let token = self.get_token().await?;
         let url = format!(
             "https://dev.azure.com/{}/{}/_apis/{}",
-            organization, project, path
+            urlencoding::encode(organization),
+            urlencoding::encode(project),
+            path
         );
 
         log::debug!("Request: GET {}", url);
@@ -374,7 +385,9 @@ impl AzureDevOpsClient {
         let token = self.get_token().await?;
         let url = format!(
             "https://dev.azure.com/{}/{}/_apis/{}",
-            organization, project, path
+            urlencoding::encode(organization),
+            urlencoding::encode(project),
+            path
         );
 
         let response = self
@@ -404,7 +417,9 @@ impl AzureDevOpsClient {
         let token = self.get_token().await?;
         let url = format!(
             "https://dev.azure.com/{}/{}/_apis/{}",
-            organization, project, path
+            urlencoding::encode(organization),
+            urlencoding::encode(project),
+            path
         );
 
         let response = self.client.get(&url).bearer_auth(token).send().await?;

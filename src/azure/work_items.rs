@@ -2,8 +2,15 @@ use crate::azure::client::{AzureDevOpsClient, AzureError};
 use crate::azure::models::{
     Comment, CommentListResponse, WiqlQuery, WiqlResponse, WorkItem, WorkItemListResponse,
 };
+use futures::future::join_all;
 use serde::Serialize;
 use serde_json::Value;
+
+const COMMENT_FETCH_CONCURRENCY: usize = 10;
+
+fn escape_json_pointer_token(token: &str) -> String {
+    token.replace('~', "~0").replace('/', "~1")
+}
 
 #[derive(Serialize)]
 pub struct JsonPatchOperation {
@@ -70,7 +77,10 @@ pub async fn get_comments(
         }
 
         if let Some(token) = &continuation_token {
-            path.push_str(&format!("&continuationToken={}", token));
+            path.push_str(&format!(
+                "&continuationToken={}",
+                urlencoding::encode(token)
+            ));
         }
 
         let (response, headers): (CommentListResponse, _) = client
@@ -136,9 +146,23 @@ pub async fn get_work_items(
     }
 
     if let Some(n) = include_latest_n_comments {
-        for work_item in &mut all_work_items {
-            let comments = get_comments(client, organization, project, work_item.id, n).await?;
-            work_item.comments = Some(comments);
+        let ids: Vec<(usize, u32)> = all_work_items
+            .iter()
+            .enumerate()
+            .map(|(i, wi)| (i, wi.id))
+            .collect();
+
+        for chunk in ids.chunks(COMMENT_FETCH_CONCURRENCY) {
+            let futures: Vec<_> = chunk
+                .iter()
+                .map(|&(_, id)| get_comments(client, organization, project, id, n))
+                .collect();
+
+            let results = join_all(futures).await;
+
+            for (&(i, _), result) in chunk.iter().zip(results) {
+                all_work_items[i].comments = Some(result?);
+            }
         }
     }
 
@@ -158,7 +182,10 @@ pub async fn create_work_item(
     for (field, format) in multiline_fields_format {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/multilineFieldsFormat/{}", field),
+            path: format!(
+                "/multilineFieldsFormat/{}",
+                escape_json_pointer_token(field)
+            ),
             value: Some(Value::String(format.to_string())),
             from: None,
         });
@@ -167,13 +194,16 @@ pub async fn create_work_item(
     for (k, v) in fields {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/fields/{}", k),
+            path: format!("/fields/{}", escape_json_pointer_token(k)),
             value: Some(v.clone()),
             from: None,
         });
     }
 
-    let path = format!("wit/workitems/${}?api-version=7.1", work_item_type);
+    let path = format!(
+        "wit/workitems/${}?api-version=7.1",
+        urlencoding::encode(work_item_type)
+    );
     client
         .post_patch(organization, project, &path, &operations)
         .await
@@ -192,7 +222,10 @@ pub async fn update_work_item(
     for (field, format) in multiline_fields_format {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/multilineFieldsFormat/{}", field),
+            path: format!(
+                "/multilineFieldsFormat/{}",
+                escape_json_pointer_token(field)
+            ),
             value: Some(Value::String(format.to_string())),
             from: None,
         });
@@ -201,7 +234,7 @@ pub async fn update_work_item(
     for (field, value) in fields {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/fields/{}", field),
+            path: format!("/fields/{}", escape_json_pointer_token(field)),
             value: Some(value.clone()),
             from: None,
         });

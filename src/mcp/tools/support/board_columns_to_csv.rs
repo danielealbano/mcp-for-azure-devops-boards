@@ -1,3 +1,4 @@
+use super::sanitize_csv_value;
 use crate::azure::boards;
 
 /// Converts board columns to CSV format.
@@ -12,10 +13,10 @@ pub fn board_columns_to_csv(columns: &[boards::BoardColumn]) -> Result<String, S
     // Write rows
     for column in columns {
         wtr.write_record([
-            &column.name,
+            &sanitize_csv_value(&column.name),
             &column.item_limit.to_string(),
             &column.is_split.unwrap_or(false).to_string(),
-            &column.column_type,
+            &sanitize_csv_value(&column.column_type),
         ])
         .map_err(|e| format!("Failed to write CSV row: {}", e))?;
     }

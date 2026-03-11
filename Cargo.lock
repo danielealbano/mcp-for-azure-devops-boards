@@ -1250,6 +1250,7 @@ dependencies = [
  "csv",
  "dotenv",
  "env_logger",
+ "futures",
  "html2text",
  "hyper 1.8.1",
  "hyper-util",

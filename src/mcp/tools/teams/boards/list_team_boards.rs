@@ -18,6 +18,7 @@ pub struct ListBoardsArgs {
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub project: String,
     /// Team ID or name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub team_id: String,
 }
 
@@ -42,7 +43,11 @@ pub async fn list_team_boards(
     // Extract just the board names for compact response
     let board_names: Vec<String> = boards.into_iter().map(|board| board.name).collect();
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&board_names).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&board_names).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }

@@ -117,29 +117,6 @@ pub struct BoardDetail {
     // Skipping _links as it's not needed
 }
 
-impl BoardDetail {
-    /// Extract work item types from the board's allowed mappings
-    pub fn get_work_item_types(&self) -> Vec<String> {
-        let mut types = Vec::new();
-
-        if let Some(mappings) = &self.allowed_mappings
-            && let Some(obj) = mappings.as_object()
-        {
-            for (_column_type, type_mappings) in obj {
-                if let Some(type_obj) = type_mappings.as_object() {
-                    for (work_item_type, _states) in type_obj {
-                        if !types.contains(work_item_type) {
-                            types.push(work_item_type.clone());
-                        }
-                    }
-                }
-            }
-        }
-
-        types
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BoardListResponse {
     pub value: Vec<BoardSummary>,
@@ -152,7 +129,10 @@ pub async fn list_teams(
     project: &str,
 ) -> Result<Vec<Team>, AzureError> {
     // Teams API: https://dev.azure.com/{organization}/_apis/projects/{project}/teams
-    let path = format!("projects/{}/teams?api-version=7.1", project);
+    let path = format!(
+        "projects/{}/teams?api-version=7.1",
+        urlencoding::encode(project)
+    );
     let response: TeamListResponse = client
         .org_request(organization, Method::GET, &path, None::<&String>)
         .await?;
@@ -168,7 +148,11 @@ pub async fn get_team(
     team_id: &str,
 ) -> Result<Team, AzureError> {
     // Team API: https://dev.azure.com/{organization}/_apis/projects/{project}/teams/{teamId}
-    let path = format!("projects/{}/teams/{}?api-version=7.1", project, team_id);
+    let path = format!(
+        "projects/{}/teams/{}?api-version=7.1",
+        urlencoding::encode(project),
+        urlencoding::encode(team_id)
+    );
     client
         .org_request(organization, Method::GET, &path, None::<&String>)
         .await
@@ -217,7 +201,10 @@ pub async fn get_board(
     board_id: &str,
 ) -> Result<BoardDetail, AzureError> {
     // Team-specific board: https://dev.azure.com/{org}/{project}/{team}/_apis/work/boards/{boardId}
-    let path = format!("work/boards/{}?api-version=7.1", board_id);
+    let path = format!(
+        "work/boards/{}?api-version=7.1",
+        urlencoding::encode(board_id)
+    );
     client
         .team_request(
             organization,
@@ -244,7 +231,10 @@ pub async fn list_board_columns(
     board_id: &str,
 ) -> Result<Vec<BoardColumn>, AzureError> {
     // Board columns: https://dev.azure.com/{org}/{project}/{team}/_apis/work/boards/{board}/columns
-    let path = format!("work/boards/{}/columns?api-version=7.1", board_id);
+    let path = format!(
+        "work/boards/{}/columns?api-version=7.1",
+        urlencoding::encode(board_id)
+    );
     let response: BoardColumnsResponse = client
         .team_request(
             organization,
@@ -272,7 +262,10 @@ pub async fn list_board_rows(
     board_id: &str,
 ) -> Result<Vec<BoardRow>, AzureError> {
     // Board rows: https://dev.azure.com/{org}/{project}/{team}/_apis/work/boards/{board}/rows
-    let path = format!("work/boards/{}/rows?api-version=7.1", board_id);
+    let path = format!(
+        "work/boards/{}/rows?api-version=7.1",
+        urlencoding::encode(board_id)
+    );
     let response: BoardRowsResponse = client
         .team_request(
             organization,

@@ -171,6 +171,15 @@ fn generate_tool_router_code(tools: &[ToolInfo]) -> String {
     code.push_str("            tool_router: Self::tool_router(),\n");
     code.push_str("        }\n");
     code.push_str("    }\n\n");
+    code.push_str("    #[cfg(feature = \"test-support\")]\n");
+    code.push_str(
+        "    pub fn new_with_api(client: impl AzureDevOpsApi + Send + Sync + 'static) -> Self {\n",
+    );
+    code.push_str("        Self {\n");
+    code.push_str("            client: Arc::new(client),\n");
+    code.push_str("            tool_router: Self::tool_router(),\n");
+    code.push_str("        }\n");
+    code.push_str("    }\n\n");
 
     for tool in tools {
         code.push_str(&format!(

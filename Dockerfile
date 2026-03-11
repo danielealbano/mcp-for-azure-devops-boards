@@ -33,8 +33,12 @@ LABEL maintainer="Daniele Salvatore Albano <d.albano@gmail.com>"
 
 RUN apk update && apk add --no-cache ca-certificates tzdata
 
+RUN adduser -D -g '' appuser
+
 WORKDIR /app
 
 COPY --from=builder /app/target/release/mcp-for-azure-devops-boards /usr/local/bin/mcp-for-azure-devops-boards
+
+USER appuser
 
 ENTRYPOINT ["mcp-for-azure-devops-boards"]

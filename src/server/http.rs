@@ -7,20 +7,32 @@ use hyper_util::{
 use rmcp::transport::streamable_http_server::{
     StreamableHttpService, session::local::LocalSessionManager,
 };
+use std::sync::Arc;
+use tokio::sync::Semaphore;
 
-pub async fn run_server(server: AzureMcpServer, port: u16) -> std::io::Result<()> {
+const MAX_CONNECTIONS: usize = 256;
+
+pub async fn run_server(
+    server: AzureMcpServer,
+    listener: tokio::net::TcpListener,
+) -> std::io::Result<()> {
     let service = TowerToHyperService::new(StreamableHttpService::new(
         move || Ok(server.clone()),
         LocalSessionManager::default().into(),
         Default::default(),
     ));
 
-    let addr = format!("0.0.0.0:{}", port);
-    let listener = tokio::net::TcpListener::bind(&addr).await?;
-    println!("Listening on http://{}", addr);
+    let semaphore = Arc::new(Semaphore::new(MAX_CONNECTIONS));
 
     loop {
         let (stream, _) = listener.accept().await?;
+        let permit = match semaphore.clone().acquire_owned().await {
+            Ok(permit) => permit,
+            Err(e) => {
+                log::error!("Failed to acquire connection permit: {:?}", e);
+                continue;
+            }
+        };
         let io = TokioIo::new(stream);
         let service = service.clone();
 
@@ -29,8 +41,10 @@ pub async fn run_server(server: AzureMcpServer, port: u16) -> std::io::Result<()
                 .serve_connection(io, service)
                 .await
             {
-                eprintln!("Error serving connection: {:?}", err);
+                log::error!("Error serving connection: {:?}", err);
             }
+
+            drop(permit);
         });
     }
 }
