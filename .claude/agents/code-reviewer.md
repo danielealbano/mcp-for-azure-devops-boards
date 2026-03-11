@@ -56,7 +56,7 @@ Review code changes across five dimensions: **QA**, **Architecture Compliance**,
 
 ### Testing Verification — MANDATORY
 
-- You MUST run `make test` to verify tests pass. You MUST flag ANY failure.
+- You MUST run `make test` to verify tests pass (runs `cargo test --features test-support`). Plain `cargo test` skips integration tests because `MockAzureDevOpsApi` is only generated when `test-support` is enabled. You MUST flag ANY failure.
 - You MUST verify tests exist for new/changed code: happy path, edge cases, failure modes. Flag missing tests as WARNING.
 - You MUST verify unit tests follow the project conventions:
   - `#[cfg(test)] mod tests` blocks within source files.
@@ -65,11 +65,12 @@ Review code changes across five dimensions: **QA**, **Architecture Compliance**,
   - `assert!`, `assert_eq!`, `assert_ne!` with descriptive messages.
   - `mockall` for trait-based mocking where applicable.
 - You MUST verify tests are independent (no execution order dependency) and clean up after themselves.
+- Integration tests live in `tests/*.rs` and use `MockAzureDevOpsApi`; they require `--features test-support` (included when running `make test`). Plans adding integration tests MUST enable this feature.
 - If ANY test is broken (even unrelated to the change): you MUST flag it.
 
 ### Linting Verification — MANDATORY
 
-- You MUST run `make lint`. You MUST flag ANY violation in output (even unrelated) with the exact output.
+- You MUST run `make lint` (runs `cargo clippy --features test-support`). You MUST flag ANY violation in output (even unrelated) with the exact output.
 - You MUST flag ANY linting suppression (`#[allow(...)]` attributes, rules disabled in `clippy.toml`) that is not justified by a documented design decision. Flag as CRITICAL.
 
 ---
@@ -86,6 +87,7 @@ You MUST verify ALL of the following in changed code:
 - **Async safety**: No blocking calls in async context. `tokio::task::spawn_blocking` for blocking operations. No fire-and-forget spawns without shutdown path. Flag violations as CRITICAL.
 - **Shared state**: `Arc<T>` for shared immutable state across tasks. `Arc<Mutex<T>>` or `tokio::sync::Mutex<T>` for shared mutable state. Flag unprotected shared mutable state as CRITICAL.
 - **MCP tool pattern**: Tools use `#[mcp_tool(name, description)]`, args struct with `Deserialize + JsonSchema`, return `Result<CallToolResult, McpError>`, convert domain errors via `.map_err()`. Flag deviations.
+- **AzureDevOpsApi trait**: Tool functions MUST accept `&(dyn AzureDevOpsApi + Send + Sync)`, not `&AzureDevOpsClient`. API calls MUST go through trait methods, not standalone functions. Flag deviations.
 - **Logging**: Use `log` crate. Correct log levels (trace/debug/info/warn/error). Never log secrets or tokens. Flag violations.
 - **CLI conventions**: All config via clap CLI flags. No env vars for config (except `RUST_LOG` for logging). Flag deviations.
 

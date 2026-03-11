@@ -20,6 +20,17 @@ graph LR
 ├── build.rs                      # Scans #[mcp_tool] → generates tool router
 ├── Makefile                      # build, test, lint, fmt targets
 ├── Dockerfile                    # Multi-stage: rust:alpine → alpine
+├── tests/                        # Integration tests (anti-prompt-injection, tool behavior)
+│   ├── common/
+│   │   └── mod.rs                # Shared helpers (assert_tool_output_has_warning)
+│   ├── test_tools_organizations.rs
+│   ├── test_tools_projects.rs
+│   ├── test_tools_teams.rs
+│   ├── test_tools_boards.rs
+│   ├── test_tools_tags.rs
+│   ├── test_tools_work_item_types.rs
+│   ├── test_tools_classification_nodes.rs
+│   └── test_tools_work_items.rs
 ├── src/
 │   ├── main.rs                   # CLI entry (clap), transport selection
 │   ├── lib.rs                    # Library root: re-exports modules
@@ -27,6 +38,7 @@ graph LR
 │   ├── azure/                    # Azure DevOps API client layer
 │   │   ├── mod.rs
 │   │   ├── client.rs             # AzureDevOpsClient, AzureError, auth, HTTP helpers
+│   │   ├── api_trait.rs          # AzureDevOpsApi trait + MockAzureDevOpsApi (test-support feature)
 │   │   ├── models.rs             # Shared data types (WorkItem, Board, Comment, etc.)
 │   │   ├── boards.rs             # Boards API
 │   │   ├── classification_nodes.rs # Area/Iteration paths API
@@ -191,7 +203,7 @@ classDiagram
     }
 
     class AzureMcpServer {
-        -Arc~AzureDevOpsClient~ client
+        -Arc~dyn AzureDevOpsApi~ client
         -ToolRouter~Self~ tool_router
         +new(client) Self
     }

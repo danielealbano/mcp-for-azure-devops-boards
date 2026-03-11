@@ -85,6 +85,7 @@ Review the ENTIRE plan across five dimensions: **Structure & Ordering**, **QA Ad
   - `assert!`, `assert_eq!`, `assert_ne!` with messages.
   - `mockall` for trait-based mocking where applicable.
 - You MUST verify: integration tests (when planned) use mock servers and test utilities (not real external services).
+- **test-support feature**: Integration tests in `tests/*.rs` use `MockAzureDevOpsApi`. That mock is generated only when `test-support` is enabled (because `cfg(test)` is not active for the library when built as a dep for integration tests). Plans MUST use `make test` / `cargo test --features test-support` and MUST NOT assume plain `cargo test` runs integration tests.
 
 ### Linting Suppression — CRITICAL
 
@@ -105,6 +106,7 @@ You MUST verify ALL of the following for EVERY action's planned code:
 - **Async safety**: No blocking calls in async context. `tokio::task::spawn_blocking` for blocking operations. No fire-and-forget spawns without shutdown path. Flag violations as CRITICAL.
 - **Shared state**: `Arc<T>` for shared immutable state. `Arc<Mutex<T>>` for shared mutable state. Flag unprotected shared mutable state as CRITICAL.
 - **MCP tool pattern**: Tools use `#[mcp_tool(name, description)]`, args struct with `Deserialize + JsonSchema`, return `Result<CallToolResult, McpError>`, convert domain errors via `.map_err()`. Flag deviations.
+- **AzureDevOpsApi trait**: Planned tool functions MUST accept `&(dyn AzureDevOpsApi + Send + Sync)`, not `&AzureDevOpsClient`. API calls MUST go through trait methods. Flag deviations.
 - **Logging**: Use `log` crate. Correct log levels (trace/debug/info/warn/error). Never log secrets. Flag violations.
 - **CLI conventions**: All config via clap CLI flags. No env vars for config (except `RUST_LOG`). Flag deviations.
 

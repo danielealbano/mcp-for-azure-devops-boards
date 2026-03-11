@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, organizations};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::tool_text_success;
 
 use mcp_tools_codegen::mcp_tool;
@@ -14,22 +14,21 @@ pub struct ListOrganizationsArgs {}
 
 #[mcp_tool(name = "azdo_list_organizations", description = "List organizations")]
 pub async fn list_organizations(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     _args: ListOrganizationsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_organizations");
 
     // First, get the user's profile to obtain their member ID
-    let profile = organizations::get_profile(client)
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: format!("Failed to get user profile: {}", e).into(),
-            data: None,
-        })?;
+    let profile = client.get_profile().await.map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to get user profile: {}", e).into(),
+        data: None,
+    })?;
 
     // Then, list all organizations for this member ID
-    let orgs = organizations::list_organizations(client, &profile.id)
+    let orgs = client
+        .list_organizations(&profile.id)
         .await
         .map_err(|e| McpError {
             code: ErrorCode(-32000),

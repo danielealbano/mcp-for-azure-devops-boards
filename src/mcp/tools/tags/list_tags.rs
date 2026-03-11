@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, tags};
+use crate::azure::api_trait::AzureDevOpsApi;
 
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
@@ -21,11 +21,12 @@ pub struct ListTagsArgs {
 
 #[mcp_tool(name = "azdo_list_tags", description = "List tags")]
 pub async fn list_tags(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListTagsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_tags");
-    let tags = tags::list_tags(client, &args.organization, &args.project)
+    let tags = client
+        .list_tags(&args.organization, &args.project)
         .await
         .map_err(|e| McpError {
             code: ErrorCode(-32000),

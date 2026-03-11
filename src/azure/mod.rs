@@ -1,3 +1,4 @@
+pub mod api_trait;
 pub mod boards;
 pub mod classification_nodes;
 pub mod client;

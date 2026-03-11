@@ -1,4 +1,4 @@
-use crate::azure::{boards, client::AzureDevOpsClient};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::compact_llm;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
@@ -24,11 +24,12 @@ pub struct ListWorkItemTypesArgs {
     description = "List work item types"
 )]
 pub async fn list_work_item_types(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListWorkItemTypesArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_work_item_types");
-    let types = boards::list_work_item_types(client, &args.organization, &args.project)
+    let types = client
+        .list_work_item_types(&args.organization, &args.project)
         .await
         .map_err(|e| McpError {
             code: ErrorCode(-32000),

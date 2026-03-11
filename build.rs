@@ -182,7 +182,7 @@ fn generate_tool_router_code(tools: &[ToolInfo]) -> String {
         code.push_str(&format!("        args: Parameters<{}>,\n", tool.args_type));
         code.push_str("    ) -> Result<CallToolResult, McpError> {\n");
         code.push_str(&format!(
-            "        {}(&self.client, args.0).await\n",
+            "        {}(&*self.client, args.0).await\n",
             tool.function_path
         ));
         code.push_str("    }\n\n");

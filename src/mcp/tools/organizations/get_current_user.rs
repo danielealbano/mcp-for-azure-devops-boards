@@ -1,4 +1,4 @@
-use crate::azure::{client::AzureDevOpsClient, organizations};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::mcp::tools::support::tool_text_success;
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
@@ -16,17 +16,15 @@ pub struct GetCurrentUserArgs {}
     description = "Get current user profile"
 )]
 pub async fn get_current_user(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     _args: GetCurrentUserArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_get_current_user");
-    let profile = organizations::get_profile(client)
-        .await
-        .map_err(|e| McpError {
-            code: ErrorCode(-32000),
-            message: e.to_string().into(),
-            data: None,
-        })?;
+    let profile = client.get_profile().await.map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: e.to_string().into(),
+        data: None,
+    })?;
 
     let mut wtr = csv::WriterBuilder::new()
         .has_headers(false)

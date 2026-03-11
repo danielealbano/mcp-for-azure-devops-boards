@@ -1,4 +1,4 @@
-use crate::azure::{boards, client::AzureDevOpsClient};
+use crate::azure::api_trait::AzureDevOpsApi;
 use crate::compact_llm;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
@@ -25,7 +25,7 @@ pub struct GetBoardArgs {
 
 #[mcp_tool(name = "azdo_get_team_board", description = "Get board details")]
 pub async fn get_team_board(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: GetBoardArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!(
@@ -33,19 +33,19 @@ pub async fn get_team_board(
         args.team_id,
         args.board_id
     );
-    let board = boards::get_board(
-        client,
-        &args.organization,
-        &args.project,
-        &args.team_id,
-        &args.board_id,
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let board = client
+        .get_board(
+            &args.organization,
+            &args.project,
+            &args.team_id,
+            &args.board_id,
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     Ok(tool_text_success(
         compact_llm::to_compact_string(&board).unwrap(),

@@ -1,4 +1,5 @@
-use crate::azure::{classification_nodes, client::AzureDevOpsClient};
+use crate::azure::api_trait::AzureDevOpsApi;
+use crate::azure::classification_nodes::ClassificationNode;
 use crate::mcp::tools::support::{deserialize_non_empty_string, tool_text_success};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
@@ -26,27 +27,27 @@ pub struct ListAreaPathsArgs {
     description = "List area paths for a project"
 )]
 pub async fn list_area_paths(
-    client: &AzureDevOpsClient,
+    client: &(dyn AzureDevOpsApi + Send + Sync),
     args: ListAreaPathsArgs,
 ) -> Result<CallToolResult, McpError> {
     log::info!("Tool invoked: azdo_list_area_paths");
 
-    let root_node = classification_nodes::list_area_paths(
-        client,
-        &args.organization,
-        &args.project,
-        args.parent_path.as_deref(),
-        10, // depth
-    )
-    .await
-    .map_err(|e| McpError {
-        code: ErrorCode(-32000),
-        message: e.to_string().into(),
-        data: None,
-    })?;
+    let root_node = client
+        .list_area_paths(
+            &args.organization,
+            &args.project,
+            args.parent_path,
+            10, // depth
+        )
+        .await
+        .map_err(|e| McpError {
+            code: ErrorCode(-32000),
+            message: e.to_string().into(),
+            data: None,
+        })?;
 
     // Flatten the tree into a list of paths
-    fn collect_paths(node: &classification_nodes::ClassificationNode, paths: &mut Vec<String>) {
+    fn collect_paths(node: &ClassificationNode, paths: &mut Vec<String>) {
         paths.push(node.path.clone());
         if let Some(children) = &node.children {
             for child in children {

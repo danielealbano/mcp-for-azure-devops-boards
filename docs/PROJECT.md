@@ -49,7 +49,7 @@ Cargo workspace with two members:
 
 | Crate | Version | Purpose |
 |---|---|---|
-| `mockall` | 0.12 | Trait-based test mocking |
+| `mockall` | 0.12 (optional, via `test-support` feature) | Trait-based test mocking for `MockAzureDevOpsApi`; required for integration tests |
 
 ### Codegen Crate (`mcp-tools-codegen`)
 
@@ -106,8 +106,10 @@ MCP tool responses are optimized for LLM consumption:
 | `make build` | `cargo build` (debug) |
 | `make release` | `cargo build --release` |
 | `make check` | `cargo check` |
-| `make test` | `cargo test` |
-| `make lint` | `cargo clippy -- -D warnings` |
+| `make test` | `cargo test --features test-support` (unit + integration tests; see below) |
+| `make lint` | `cargo clippy --features test-support -- -D warnings` |
+
+**test-support feature**: `mockall` and integration tests require the `test-support` feature because `cfg(test)` is not active when the library is built as a dependency for `tests/*.rs`. Without `--features test-support`, `cargo test` skips integration tests. Always use `make test` for the full suite.
 | `make fmt` | `cargo fmt` |
 | `make clean` | `cargo clean` |
 | `make all` | `fmt` → `lint` → `test` → `build` |
@@ -154,6 +156,6 @@ MCP tool responses are optimized for LLM consumption:
 Each tool follows this pattern:
 1. Define `Args` struct with `Deserialize` + `JsonSchema` (schemars).
 2. Annotate the async function with `#[mcp_tool(name = "...", description = "...")]`.
-3. Function signature: `pub async fn tool_name(client: &AzureDevOpsClient, args: ArgsType) -> Result<CallToolResult, McpError>`.
+3. Function signature: `pub async fn tool_name(client: &(dyn AzureDevOpsApi + Send + Sync), args: ArgsType) -> Result<CallToolResult, McpError>`.
 4. Convert domain errors to `McpError` via `.map_err()`.
 5. Return `tool_text_success(content)` (from `support/tool_text_success.rs`) — this automatically prepends the anti-prompt-injection warning to all tool responses. Never use `CallToolResult::success(vec![Content::text(...)])` directly.

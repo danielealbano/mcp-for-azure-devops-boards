@@ -21,11 +21,11 @@ check:
 
 # Run tests
 test:
-	cargo test
+	cargo test --features test-support
 
 # Run clippy for linting
 lint:
-	cargo clippy -- -D warnings
+	cargo clippy --features test-support -- -D warnings
 
 # Format code
 fmt:
