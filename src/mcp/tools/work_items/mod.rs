@@ -6,6 +6,7 @@ pub mod get_work_items;
 pub mod link_work_items;
 pub mod query_work_items;
 pub mod query_work_items_by_wiql;
+pub mod update_comment;
 pub mod update_work_item;
 
 // Re-export the public items
@@ -16,4 +17,5 @@ pub use get_work_items::{GetWorkItemsArgs, get_work_items};
 pub use link_work_items::{LinkWorkItemsArgs, link_work_items};
 pub use query_work_items::{QueryWorkItemsArgs, query_work_items};
 pub use query_work_items_by_wiql::{QueryWorkItemsArgsWiql, query_work_items_by_wiql};
+pub use update_comment::{UpdateCommentArgs, update_comment};
 pub use update_work_item::{UpdateWorkItemArgs, update_work_item};

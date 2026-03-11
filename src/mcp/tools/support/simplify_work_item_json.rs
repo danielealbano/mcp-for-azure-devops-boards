@@ -103,63 +103,36 @@ pub fn simplify_work_item_json(value: &mut Value) {
                         if matches!(
                             final_key.as_str(),
                             "Acceptance" | "Description" | "Justification"
-                        ) {
-                            if let Value::String(html_content) = &val {
-                                // Convert HTML to plain text, width doesn't matter as we don't need wrapping
-                                if let Ok(mut plain_text) =
-                                    html2text::from_read(html_content.as_bytes(), usize::MAX)
-                                {
-                                    // Normalize newlines: replace \r with \n
-                                    plain_text = plain_text.replace('\r', "\n");
+                        ) && let Value::String(html_content) = &val
+                            && let Ok(mut plain_text) =
+                                html2text::from_read(html_content.as_bytes(), usize::MAX)
+                        {
+                            plain_text = plain_text.replace('\r', "\n");
+                            plain_text = plain_text.replace('\t', " ");
+                            plain_text = plain_text.replace('─', "-");
+                            plain_text = RE_SPACES.replace_all(&plain_text, " ").to_string();
+                            plain_text = RE_NEWLINES.replace_all(&plain_text, "\n").to_string();
+                            plain_text = RE_LEADING_WS.replace_all(&plain_text, "\n").to_string();
+                            plain_text = RE_TRAILING_WS.replace_all(&plain_text, "\n").to_string();
+                            plain_text = RE_DASHES.replace_all(&plain_text, "---\n").to_string();
+                            plain_text = RE_IMAGE.replace_all(&plain_text, "").to_string();
 
-                                    // Normalize tabulations: replace \t with 1 space
-                                    plain_text = plain_text.replace('\t', " ");
-
-                                    // Normalize emdashes: replace ─ with -
-                                    plain_text = plain_text.replace('─', "-");
-
-                                    // Remove multiple consecutive spaces
-                                    plain_text =
-                                        RE_SPACES.replace_all(&plain_text, " ").to_string();
-
-                                    // Collapse multiple consecutive newlines into single newlines
-                                    plain_text =
-                                        RE_NEWLINES.replace_all(&plain_text, "\n").to_string();
-
-                                    // Remove leading whitespace before newlines (spaces, tabs, etc.)
-                                    plain_text =
-                                        RE_LEADING_WS.replace_all(&plain_text, "\n").to_string();
-
-                                    // Remove trailing whitespace before newlines (spaces, tabs, etc.)
-                                    plain_text =
-                                        RE_TRAILING_WS.replace_all(&plain_text, "\n").to_string();
-
-                                    // Collapse 3+ dashes followed by newline to just 3 dashes + newline
-                                    plain_text =
-                                        RE_DASHES.replace_all(&plain_text, "---\n").to_string();
-
-                                    // Remove [Image] strings (case insensitive)
-                                    plain_text = RE_IMAGE.replace_all(&plain_text, "").to_string();
-
-                                    val = Value::String(plain_text.trim().to_string());
-                                }
-                            }
+                            val = Value::String(plain_text.trim().to_string());
                         }
 
                         // Optimize Tags field by removing spaces after semicolons
-                        if final_key == "Tags" {
-                            if let Value::String(tags) = &val {
-                                val = Value::String(tags.replace("; ", ";"));
-                            }
+                        if final_key == "Tags"
+                            && let Value::String(tags) = &val
+                        {
+                            val = Value::String(tags.replace("; ", ";"));
                         }
 
                         // Abbreviate Type field to just first letter
-                        if final_key == "Type" {
-                            if let Value::String(type_val) = &val {
-                                if let Some(first_char) = type_val.chars().next() {
-                                    val = Value::String(first_char.to_string());
-                                }
-                            }
+                        if final_key == "Type"
+                            && let Value::String(type_val) = &val
+                            && let Some(first_char) = type_val.chars().next()
+                        {
+                            val = Value::String(first_char.to_string());
                         }
 
                         // Only insert if not already present (prefer existing values)

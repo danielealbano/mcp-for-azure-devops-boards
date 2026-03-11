@@ -35,18 +35,18 @@ pub async fn list_iteration_paths(
     log::info!("Tool invoked: azdo_list_iteration_paths");
 
     // Validate timeframe if provided
-    if let Some(ref timeframe) = args.timeframe {
-        if !matches!(timeframe.as_str(), "current" | "past" | "future") {
-            return Err(McpError {
-                code: ErrorCode(-32602),
-                message: format!(
-                    "Invalid timeframe '{}'. Valid values are: 'current', 'past', 'future'",
-                    timeframe
-                )
-                .into(),
-                data: None,
-            });
-        }
+    if let Some(ref timeframe) = args.timeframe
+        && !matches!(timeframe.as_str(), "current" | "past" | "future")
+    {
+        return Err(McpError {
+            code: ErrorCode(-32602),
+            message: format!(
+                "Invalid timeframe '{}'. Valid values are: 'current', 'past', 'future'",
+                timeframe
+            )
+            .into(),
+            data: None,
+        });
     }
 
     // If team_id is provided, use team-specific iterations

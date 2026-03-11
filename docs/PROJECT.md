@@ -88,7 +88,7 @@ Tool registration uses a two-phase code generation approach:
 
 - Base URL: `https://dev.azure.com/{organization}/{project}/_apis/`
 - VSSPS URL: `https://app.vssps.visualstudio.com/_apis/`
-- API version: 7.1
+- API version: 7.1 (Comments API: 7.2-preview.4)
 - Auth: Bearer token via `DefaultAzureCredential` (scope: `499b84ac-1321-427f-aa17-267ca6975798`)
 - Content types: `application/json`, `application/json-patch+json` (for work item create/update), `application/octet-stream` (binary)
 

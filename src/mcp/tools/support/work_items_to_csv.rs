@@ -51,7 +51,7 @@ pub fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
     for field in &all_fields {
         let has_value = items.iter().any(|item| {
             item.get(field)
-                .map(|v| !v.is_null() && v.as_str().map_or(true, |s| !s.is_empty()))
+                .map(|v| !v.is_null() && v.as_str().is_none_or(|s| !s.is_empty()))
                 .unwrap_or(false)
         });
         if has_value {

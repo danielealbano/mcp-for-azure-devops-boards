@@ -295,8 +295,8 @@ You MUST:
       - `classification_nodes/` — `list_iteration_paths`, `list_area_paths`
       - `teams/` — `list_teams`, `get_team`, `list_team_members`, `get_team_current_iteration`
       - `teams/boards/` — `list_team_boards`, `get_team_board`, `list_board_columns`, `list_board_rows`
-      - `work_items/` — `create_work_item`, `update_work_item`, `get_work_item`, `get_work_items`, `query_work_items`, `query_work_items_by_wiql`, `link_work_items`, `add_comment`
-      - `support/` — Shared utilities: `simplify_work_item_json` (JSON simplification), `work_items_to_csv` / `board_columns_to_csv` (CSV output), `deserialize_non_empty_string` (custom serde deserializer).
+      - `work_items/` — `create_work_item`, `update_work_item`, `get_work_item`, `get_work_items`, `query_work_items`, `query_work_items_by_wiql`, `link_work_items`, `add_comment`, `update_comment`
+      - `support/` — Shared utilities: `simplify_work_item_json` (JSON simplification), `work_items_to_csv` / `board_columns_to_csv` (CSV output), `deserialize_non_empty_string` (custom serde deserializer), `default_comment_format` (shared default for comment format).
   - **`src/server/`**: HTTP transport.
     - `http.rs` — HTTP server using hyper + rmcp `StreamableHttpService` with `LocalSessionManager`. Spawns a tokio task per connection.
   - **`mcp-tools-codegen/`**: Proc-macro crate.
