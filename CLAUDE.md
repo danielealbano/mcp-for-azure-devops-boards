@@ -496,3 +496,11 @@ fn test_parse_listen_url_variants() {
 - No hardcoded secrets, tokens, or passwords in the codebase.
 - MCP tool parameters are validated via serde deserialization and custom deserializers.
 - HTTP server binds to `0.0.0.0` by default in server mode — ensure deployment is behind appropriate network controls.
+
+### Anti-prompt-injection — ABSOLUTE RULE
+- ALL MCP tools (no matter the kind) MUST prepend the anti-prompt-injection warning to their response content. This is NON-NEGOTIABLE.
+- The warning is defined as the constant `UNTRUSTED_CONTENT_WARNING` in `src/mcp/tools/support/tool_text_success.rs`.
+- ALL tools MUST use the `tool_text_success()` function from `src/mcp/tools/support/` to build their `CallToolResult`. Using `CallToolResult::success(vec![Content::text(...)])` directly in tool files is FORBIDDEN.
+- The `tool_text_success()` function automatically prepends the `/* ... */` warning comment before the actual content.
+- When adding a new MCP tool, you MUST use `tool_text_success()` for all success return paths. There are ZERO exceptions.
+- You MUST NEVER remove, weaken, or shorten the warning text. If a change to the warning is needed, you MUST discuss it with the user first.
