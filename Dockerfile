@@ -26,7 +26,7 @@ LABEL com.github.actions.name="auto publish"
 LABEL com.github.actions.icon="package"
 LABEL com.github.actions.color="blue"
 
-LABEL version="0.5.0"
+LABEL version="0.7.0"
 LABEL repository="https://github.com/danielealbano/mcp-for-azure-devops-boards"
 LABEL homepage="https://github.com/danielealbano/mcp-for-azure-devops-boards"
 LABEL maintainer="Daniele Salvatore Albano <d.albano@gmail.com>"
