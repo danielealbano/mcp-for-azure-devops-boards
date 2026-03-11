@@ -1,6 +1,6 @@
 use crate::azure::{client::AzureDevOpsClient, work_items};
 use crate::compact_llm;
-use crate::mcp::tools::support::{default_comment_format, deserialize_non_empty_string};
+use crate::mcp::tools::support::{default_text_format, deserialize_non_empty_string};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
@@ -25,7 +25,7 @@ pub struct UpdateCommentArgs {
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub text: String,
     /// Comment format: "markdown" or "html" (default: "markdown")
-    #[serde(default = "default_comment_format")]
+    #[serde(default = "default_text_format")]
     pub format: String,
 }
 
