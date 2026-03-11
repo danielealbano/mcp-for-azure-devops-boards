@@ -553,7 +553,10 @@ mod tests {
             .strip_prefix(UNTRUSTED_CONTENT_WARNING)
             .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
-        assert!(content.contains("Title"), "Output should contain Title header");
+        assert!(
+            content.contains("Title"),
+            "Output should contain Title header"
+        );
         assert!(
             content.contains("Test Work Item"),
             "Output should contain Title value"
