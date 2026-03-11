@@ -1045,10 +1045,10 @@ mod tests {
 
 ### Acceptance Criteria
 
-- [ ] `make all` passes (fmt → lint → test → build)
-- [ ] No warnings from build or clippy
-- [ ] All tests pass
-- [ ] No TODOs or commented-out code introduced
+- [x] `make all` passes (fmt → lint → test → build)
+- [x] No warnings from build or clippy
+- [x] All tests pass
+- [x] No TODOs or commented-out code introduced
 
 ---
 
@@ -1057,29 +1057,29 @@ mod tests {
 1. Run `make all` (fmt → lint → test → build)
 2. Review every changed file against this plan
 3. Verify:
-   - [ ] US1: URL encoding applied everywhere listed
-   - [ ] US1: WIQL escaping applied to project + 6 date fields
-   - [ ] US1: JSON Pointer escaping applied to all patch paths
-   - [ ] US2: CSV formula sanitization applied in both CSV files
-   - [ ] US3: No duplicate board types in models.rs
-   - [ ] US3: Zero unwrap() on serialization in tool files
-   - [ ] US3: All listed fields have non-empty validation
-   - [ ] US4: Comment fetching is concurrent with limit 10
-   - [ ] US4: Recursion depth capped at 64 in both functions
-   - [ ] US4: HTTP server has semaphore (256) and timeout (60s)
-   - [ ] US4: HashSet used for work item type dedup
-   - [ ] US5: Dockerfile has non-root user
-   - [ ] US5: CI runs clippy and cargo-audit
-   - [ ] US5: CD includes Linux aarch64 archive
-   - [ ] US6: All 9 compact_llm tests pass
-   - [ ] US7: 25 error-path tests + ~25 content-verification tests pass
-   - [ ] US8: HTTP server and CLI tests pass
-   - [ ] Zero lint warnings, zero build warnings, all tests green
+   - [x] US1: URL encoding applied everywhere listed
+   - [x] US1: WIQL escaping applied to project + 6 date fields
+   - [x] US1: JSON Pointer escaping applied to all patch paths
+   - [x] US2: CSV formula sanitization applied in both CSV files
+   - [x] US3: No duplicate board types in models.rs
+   - [x] US3: Zero unwrap() on serialization in tool files
+   - [x] US3: All listed fields have non-empty validation
+   - [x] US4: Comment fetching is concurrent with limit 10
+   - [x] US4: Recursion depth capped at 64 in both functions
+   - [x] US4: HTTP server has semaphore (256) and timeout (60s)
+   - [x] US4: HashSet used for work item type dedup
+   - [x] US5: Dockerfile has non-root user
+   - [x] US5: CI runs clippy and cargo-audit
+   - [x] US5: CD includes Linux aarch64 archive
+   - [x] US6: All 9 compact_llm tests pass
+   - [x] US7: 25 error-path tests + ~25 content-verification tests pass
+   - [x] US8: HTTP server and CLI tests pass
+   - [x] Zero lint warnings, zero build warnings, all tests green
 
 **DoD**:
 
-- [ ] `make all` succeeds with zero warnings
-- [ ] Every checkbox in this plan is checked
+- [x] `make all` succeeds with zero warnings
+- [x] Every checkbox in this plan is checked
 
 ---
 
