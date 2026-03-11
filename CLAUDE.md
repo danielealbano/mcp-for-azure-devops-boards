@@ -246,9 +246,15 @@ This project uses specialized subagents (defined in `.claude/agents/`) to enforc
 - Use `mockall` (in dev-dependencies) for generating mock implementations.
 - Keep traits small (1–3 methods). Prefer composing small traits over large ones.
 
+### AzureDevOpsApi trait
+- All MCP tool functions accept `&(dyn AzureDevOpsApi + Send + Sync)` instead of `&AzureDevOpsClient`.
+- `AzureDevOpsApi` is defined in `src/azure/api_trait.rs` with `#[cfg_attr(feature = "test-support", mockall::automock)]`.
+- `AzureDevOpsClient` implements the trait by delegating to the standalone API functions.
+- Integration tests use `MockAzureDevOpsApi` (enabled via `test-support` feature) to verify tool behavior without external services.
+
 ### Dependency injection
 - Pass dependencies explicitly via constructor parameters (`new()`).
-- Use `Arc<T>` for shared ownership across async tasks (e.g., `Arc<AzureDevOpsClient>` in `AzureMcpServer`).
+- Use `Arc<T>` for shared ownership across async tasks (e.g., `Arc<dyn AzureDevOpsApi + Send + Sync>` in `AzureMcpServer`).
 - Do NOT rely on mutable global state or `lazy_static!` for wiring dependencies (compile-time constants via `once_cell::sync::Lazy` for regex patterns are acceptable).
 
 ### Concurrency and safety

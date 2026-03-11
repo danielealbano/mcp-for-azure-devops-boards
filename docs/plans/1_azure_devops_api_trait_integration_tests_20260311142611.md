@@ -14,14 +14,14 @@ Tools currently take `&AzureDevOpsClient` directly, making mocking impossible. T
 
 Establishes the mockable API boundary so tools can be tested without external services.
 
-- [ ] `list_team_members` normalized from `impl AzureDevOpsClient` method to standalone fn in `teams.rs`
-- [ ] `create_work_item`/`update_work_item` in `work_items.rs` accept owned types: `&[(String, Value)]`, `&[(String, String)]`
-- [ ] `AzureDevOpsApi` trait in `src/azure/api_trait.rs` with 23 async methods and `#[cfg_attr(feature = "test-support", mockall::automock)]`
-- [ ] `impl AzureDevOpsApi for AzureDevOpsClient` delegating to existing standalone functions
-- [ ] `mockall` moved to optional dependency, `test-support` feature added to `Cargo.toml`
-- [ ] Module registered in `src/azure/mod.rs`
-- [ ] `UNTRUSTED_CONTENT_WARNING` exported from `src/mcp/tools/support/mod.rs`
-- [ ] Makefile updated to pass `--features test-support` to test/lint targets
+- [x] `list_team_members` normalized from `impl AzureDevOpsClient` method to standalone fn in `teams.rs`
+- [x] `create_work_item`/`update_work_item` in `work_items.rs` accept owned types: `&[(String, Value)]`, `&[(String, String)]`
+- [x] `AzureDevOpsApi` trait in `src/azure/api_trait.rs` with 23 async methods and `#[cfg_attr(feature = "test-support", mockall::automock)]`
+- [x] `impl AzureDevOpsApi for AzureDevOpsClient` delegating to existing standalone functions
+- [x] `mockall` moved to optional dependency, `test-support` feature added to `Cargo.toml`
+- [x] Module registered in `src/azure/mod.rs`
+- [x] `UNTRUSTED_CONTENT_WARNING` exported from `src/mcp/tools/support/mod.rs`
+- [x] Makefile updated to pass `--features test-support` to test/lint targets
 
 ### Task 1.1: Normalize `list_team_members` in `src/azure/teams.rs` (modify)
 
@@ -528,11 +528,11 @@ Pass `--features test-support` to test and lint targets so `MockAzureDevOpsApi` 
 
 Replace concrete `AzureDevOpsClient` references with the trait throughout the tool stack so mocks can be injected.
 
-- [ ] `AzureMcpServer.client` is `Arc<dyn AzureDevOpsApi + Send + Sync>`
-- [ ] `build.rs` delegates via `&*self.client`
-- [ ] All 24 tool functions accept `&(dyn AzureDevOpsApi + Send + Sync)`
-- [ ] All API calls go through trait methods
-- [ ] `main.rs` unchanged
+- [x] `AzureMcpServer.client` is `Arc<dyn AzureDevOpsApi + Send + Sync>`
+- [x] `build.rs` delegates via `&*self.client`
+- [x] All 24 tool functions accept `&(dyn AzureDevOpsApi + Send + Sync)`
+- [x] All API calls go through trait methods
+- [x] `main.rs` unchanged
 
 ### Task 2.1: Update `src/mcp/server.rs` (modify)
 
@@ -687,9 +687,9 @@ All tool files MUST keep `CallToolResult` in the `rmcp::model` import — it is 
 
 Proves every tool prepends the anti-prompt-injection warning by exercising real tool functions against mocked API.
 
-- [ ] Every MCP tool has an integration test verifying anti-prompt-injection warning prefix
-- [ ] Tests use `MockAzureDevOpsApi` from `#[automock]`
-- [ ] Tests exercise full tool function → `CallToolResult` path
+- [x] Every MCP tool has an integration test verifying anti-prompt-injection warning prefix
+- [x] Tests use `MockAzureDevOpsApi` from `#[automock]`
+- [x] Tests exercise full tool function → `CallToolResult` path
 
 ### Task 3.1: Create `tests/common/mod.rs` (create)
 
@@ -799,11 +799,11 @@ Note: the `extract_text_from_result` implementation depends on rmcp's `Content` 
 
 Ensure project docs and reviewer agents are aware of the new `AzureDevOpsApi` trait convention.
 
-- [ ] `CLAUDE.md` updated with trait convention
-- [ ] `.claude/agents/code-reviewer.md` updated
-- [ ] `.claude/agents/plan-reviewer.md` updated
-- [ ] `docs/PROJECT.md` updated
-- [ ] `docs/ARCHITECTURE.md` updated
+- [x] `CLAUDE.md` updated with trait convention
+- [x] `.claude/agents/code-reviewer.md` updated
+- [x] `.claude/agents/plan-reviewer.md` updated
+- [x] `docs/PROJECT.md` updated
+- [x] `docs/ARCHITECTURE.md` updated
 
 ### Task 4.1: Update `CLAUDE.md` (modify)
 

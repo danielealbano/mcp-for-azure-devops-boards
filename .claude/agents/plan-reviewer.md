@@ -105,6 +105,7 @@ You MUST verify ALL of the following for EVERY action's planned code:
 - **Async safety**: No blocking calls in async context. `tokio::task::spawn_blocking` for blocking operations. No fire-and-forget spawns without shutdown path. Flag violations as CRITICAL.
 - **Shared state**: `Arc<T>` for shared immutable state. `Arc<Mutex<T>>` for shared mutable state. Flag unprotected shared mutable state as CRITICAL.
 - **MCP tool pattern**: Tools use `#[mcp_tool(name, description)]`, args struct with `Deserialize + JsonSchema`, return `Result<CallToolResult, McpError>`, convert domain errors via `.map_err()`. Flag deviations.
+- **AzureDevOpsApi trait**: Planned tool functions MUST accept `&(dyn AzureDevOpsApi + Send + Sync)`, not `&AzureDevOpsClient`. API calls MUST go through trait methods. Flag deviations.
 - **Logging**: Use `log` crate. Correct log levels (trace/debug/info/warn/error). Never log secrets. Flag violations.
 - **CLI conventions**: All config via clap CLI flags. No env vars for config (except `RUST_LOG`). Flag deviations.
 
