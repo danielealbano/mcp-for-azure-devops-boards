@@ -1,6 +1,8 @@
 use crate::azure::{client::AzureDevOpsClient, work_items};
 use crate::compact_llm;
-use crate::mcp::tools::support::{deserialize_non_empty_string, simplify_work_item_json};
+use crate::mcp::tools::support::{
+    default_text_format, deserialize_non_empty_string, simplify_work_item_json,
+};
 use mcp_tools_codegen::mcp_tool;
 use rmcp::{
     ErrorData as McpError,
@@ -20,11 +22,15 @@ pub struct UpdateWorkItemArgs {
     /// Work item ID to update
     pub id: u32,
 
+    /// Format for large text fields (description, acceptance criteria, repro steps): "markdown" or "html" (default: "markdown")
+    #[serde(default = "default_text_format")]
+    pub format: String,
+
     /// Work item title
     #[serde(default)]
     pub title: Option<String>,
 
-    /// Work item description (Basic HTML supported)
+    /// Work item description (use markdown syntax when format is "markdown", HTML tags when format is "html")
     #[serde(default)]
     pub description: Option<String>,
 
@@ -88,11 +94,11 @@ pub struct UpdateWorkItemArgs {
     #[serde(default)]
     pub target_date: Option<String>,
 
-    /// Acceptance criteria (for user stories)
+    /// Acceptance criteria (use markdown syntax when format is "markdown", HTML tags when format is "html")
     #[serde(default)]
     pub acceptance_criteria: Option<String>,
 
-    /// Reproduction steps (for bugs)
+    /// Reproduction steps (use markdown syntax when format is "markdown", HTML tags when format is "html")
     #[serde(default)]
     pub repro_steps: Option<String>,
 
@@ -106,12 +112,36 @@ pub async fn update_work_item(
     client: &AzureDevOpsClient,
     args: UpdateWorkItemArgs,
 ) -> Result<CallToolResult, McpError> {
+    let format = args.format.to_lowercase();
+    if format != "markdown" && format != "html" {
+        return Err(McpError {
+            code: ErrorCode(-32602),
+            message: "Invalid format: must be \"markdown\" or \"html\"".into(),
+            data: None,
+        });
+    }
+
     log::info!(
-        "Tool invoked: azdo_update_work_item(id={}, title={:?}, state={:?})",
+        "Tool invoked: azdo_update_work_item(id={}, title={:?}, state={:?}, format={})",
         args.id,
         args.title,
         args.state,
+        format,
     );
+
+    // Build multiline fields format list for large text fields
+    let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+    if format == "markdown" {
+        if args.description.is_some() {
+            multiline_formats.push(("System.Description", "Markdown"));
+        }
+        if args.acceptance_criteria.is_some() {
+            multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+        }
+        if args.repro_steps.is_some() {
+            multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+        }
+    }
 
     // Build the field map (only include fields that are Some)
     let mut field_map = serde_json::Map::new();
@@ -241,6 +271,7 @@ pub async fn update_work_item(
         &args.project,
         args.id,
         &fields_vec,
+        &multiline_formats,
     )
     .await
     .map_err(|e| McpError {
@@ -256,4 +287,169 @@ pub async fn update_work_item(
     Ok(CallToolResult::success(vec![Content::text(
         compact_llm::to_compact_string(&json_value).unwrap(),
     )]))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn deserialize_args(json: &str) -> Result<UpdateWorkItemArgs, serde_json::Error> {
+        serde_json::from_str(json)
+    }
+
+    #[test]
+    fn test_update_work_item_args_format_defaults_to_markdown() {
+        let args = deserialize_args(r#"{"organization":"org","project":"proj","id":1}"#).unwrap();
+        assert_eq!(args.format, "markdown");
+    }
+
+    #[test]
+    fn test_update_work_item_args_format_accepts_html() {
+        let args =
+            deserialize_args(r#"{"organization":"org","project":"proj","id":1,"format":"html"}"#)
+                .unwrap();
+        assert_eq!(args.format, "html");
+    }
+
+    #[test]
+    fn test_update_work_item_args_format_accepts_markdown() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","id":1,"format":"markdown"}"#,
+        )
+        .unwrap();
+        assert_eq!(args.format, "markdown");
+    }
+
+    #[test]
+    fn test_update_work_item_args_invalid_format_passes_deserialization() {
+        let args =
+            deserialize_args(r#"{"organization":"org","project":"proj","id":1,"format":"xml"}"#)
+                .unwrap();
+        assert_eq!(args.format, "xml");
+    }
+
+    #[test]
+    fn test_update_work_item_args_rejects_empty_organization() {
+        let result = deserialize_args(r#"{"organization":"","project":"proj","id":1}"#);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_update_work_item_args_rejects_empty_project() {
+        let result = deserialize_args(r#"{"organization":"org","project":"","id":1}"#);
+        assert!(result.is_err());
+    }
+
+    fn validate_format(format: &str) -> bool {
+        let f = format.to_lowercase();
+        f == "markdown" || f == "html"
+    }
+
+    #[test]
+    fn test_update_work_item_format_validation_rejects_invalid_values() {
+        let cases = vec![
+            ("xml", false),
+            ("plaintext", false),
+            ("", false),
+            ("MARKDOWN", true),
+            ("Html", true),
+            ("markdown", true),
+            ("html", true),
+        ];
+
+        for (format, expected_valid) in cases {
+            assert_eq!(
+                validate_format(format),
+                expected_valid,
+                "format '{}' should be {}",
+                format,
+                if expected_valid { "valid" } else { "invalid" }
+            );
+        }
+    }
+
+    #[test]
+    fn test_update_work_item_multiline_formats_built_for_markdown() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","id":1,"description":"desc","acceptance_criteria":"ac","repro_steps":"steps"}"#,
+        )
+        .unwrap();
+
+        let format = args.format.to_lowercase();
+        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        if format == "markdown" {
+            if args.description.is_some() {
+                multiline_formats.push(("System.Description", "Markdown"));
+            }
+            if args.acceptance_criteria.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+            }
+            if args.repro_steps.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+            }
+        }
+
+        assert_eq!(multiline_formats.len(), 3);
+        assert_eq!(multiline_formats[0], ("System.Description", "Markdown"));
+        assert_eq!(
+            multiline_formats[1],
+            ("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown")
+        );
+        assert_eq!(
+            multiline_formats[2],
+            ("Microsoft.VSTS.TCM.ReproSteps", "Markdown")
+        );
+    }
+
+    #[test]
+    fn test_update_work_item_multiline_formats_empty_for_html() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","id":1,"format":"html","description":"desc","acceptance_criteria":"ac","repro_steps":"steps"}"#,
+        )
+        .unwrap();
+
+        let format = args.format.to_lowercase();
+        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        if format == "markdown" {
+            if args.description.is_some() {
+                multiline_formats.push(("System.Description", "Markdown"));
+            }
+            if args.acceptance_criteria.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+            }
+            if args.repro_steps.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+            }
+        }
+
+        assert!(multiline_formats.is_empty());
+    }
+
+    #[test]
+    fn test_update_work_item_multiline_formats_only_for_provided_fields() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","id":1,"repro_steps":"steps"}"#,
+        )
+        .unwrap();
+
+        let format = args.format.to_lowercase();
+        let mut multiline_formats: Vec<(&str, &str)> = Vec::new();
+        if format == "markdown" {
+            if args.description.is_some() {
+                multiline_formats.push(("System.Description", "Markdown"));
+            }
+            if args.acceptance_criteria.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.Common.AcceptanceCriteria", "Markdown"));
+            }
+            if args.repro_steps.is_some() {
+                multiline_formats.push(("Microsoft.VSTS.TCM.ReproSteps", "Markdown"));
+            }
+        }
+
+        assert_eq!(multiline_formats.len(), 1);
+        assert_eq!(
+            multiline_formats[0],
+            ("Microsoft.VSTS.TCM.ReproSteps", "Markdown")
+        );
+    }
 }

@@ -151,16 +151,27 @@ pub async fn create_work_item(
     project: &str,
     work_item_type: &str,
     fields: &[(&str, Value)],
+    multiline_fields_format: &[(&str, &str)],
 ) -> Result<WorkItem, AzureError> {
-    let operations: Vec<JsonPatchOperation> = fields
-        .iter()
-        .map(|(k, v)| JsonPatchOperation {
+    let mut operations: Vec<JsonPatchOperation> = Vec::new();
+
+    for (field, format) in multiline_fields_format {
+        operations.push(JsonPatchOperation {
+            op: "add".to_string(),
+            path: format!("/multilineFieldsFormat/{}", field),
+            value: Some(Value::String(format.to_string())),
+            from: None,
+        });
+    }
+
+    for (k, v) in fields {
+        operations.push(JsonPatchOperation {
             op: "add".to_string(),
             path: format!("/fields/{}", k),
             value: Some(v.clone()),
             from: None,
-        })
-        .collect();
+        });
+    }
 
     let path = format!("wit/workitems/${}?api-version=7.1", work_item_type);
     client
@@ -174,16 +185,27 @@ pub async fn update_work_item(
     project: &str,
     id: u32,
     fields: &[(&str, Value)],
+    multiline_fields_format: &[(&str, &str)],
 ) -> Result<WorkItem, AzureError> {
-    let operations: Vec<JsonPatchOperation> = fields
-        .iter()
-        .map(|(field, value)| JsonPatchOperation {
+    let mut operations: Vec<JsonPatchOperation> = Vec::new();
+
+    for (field, format) in multiline_fields_format {
+        operations.push(JsonPatchOperation {
+            op: "add".to_string(),
+            path: format!("/multilineFieldsFormat/{}", field),
+            value: Some(Value::String(format.to_string())),
+            from: None,
+        });
+    }
+
+    for (field, value) in fields {
+        operations.push(JsonPatchOperation {
             op: "add".to_string(),
             path: format!("/fields/{}", field),
             value: Some(value.clone()),
             from: None,
-        })
-        .collect();
+        });
+    }
 
     let path = format!("wit/workitems/{}?api-version=7.1", id);
     client
