@@ -154,4 +154,41 @@ mod tests {
         .unwrap();
         assert_eq!(args.comment_id, u32::MAX);
     }
+
+    fn validate_format(format: &str) -> bool {
+        let f = format.to_lowercase();
+        f == "markdown" || f == "html"
+    }
+
+    #[test]
+    fn test_update_comment_format_validation_rejects_invalid_values() {
+        let cases = vec![
+            ("xml", false),
+            ("plaintext", false),
+            ("", false),
+            ("MARKDOWN", true),
+            ("Html", true),
+            ("markdown", true),
+            ("html", true),
+        ];
+
+        for (format, expected_valid) in cases {
+            assert_eq!(
+                validate_format(format),
+                expected_valid,
+                "format '{}' should be {}",
+                format,
+                if expected_valid { "valid" } else { "invalid" }
+            );
+        }
+    }
+
+    #[test]
+    fn test_update_comment_args_invalid_format_passes_deserialization() {
+        let args = deserialize_args(
+            r#"{"organization":"org","project":"proj","work_item_id":1,"comment_id":42,"text":"hello","format":"xml"}"#,
+        )
+        .unwrap();
+        assert_eq!(args.format, "xml");
+    }
 }

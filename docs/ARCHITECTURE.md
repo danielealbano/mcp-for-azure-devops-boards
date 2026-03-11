@@ -164,6 +164,7 @@ sequenceDiagram
 | | `azdo_query_work_items_by_wiql` | Query work items by raw WIQL |
 | | `azdo_link_work_items` | Link two work items |
 | | `azdo_add_comment` | Add comment to a work item |
+| | `azdo_update_comment` | Update a comment on a work item |
 
 ## Key Data Types
 
