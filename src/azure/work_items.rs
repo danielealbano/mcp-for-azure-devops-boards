@@ -150,8 +150,8 @@ pub async fn create_work_item(
     organization: &str,
     project: &str,
     work_item_type: &str,
-    fields: &[(&str, Value)],
-    multiline_fields_format: &[(&str, &str)],
+    fields: &[(String, Value)],
+    multiline_fields_format: &[(String, String)],
 ) -> Result<WorkItem, AzureError> {
     let mut operations: Vec<JsonPatchOperation> = Vec::new();
 
@@ -184,8 +184,8 @@ pub async fn update_work_item(
     organization: &str,
     project: &str,
     id: u32,
-    fields: &[(&str, Value)],
-    multiline_fields_format: &[(&str, &str)],
+    fields: &[(String, Value)],
+    multiline_fields_format: &[(String, String)],
 ) -> Result<WorkItem, AzureError> {
     let mut operations: Vec<JsonPatchOperation> = Vec::new();
 
