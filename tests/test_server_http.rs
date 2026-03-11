@@ -7,7 +7,7 @@ mod tests {
     #[tokio::test]
     async fn test_http_server_accepts_connection() {
         let mock = MockAzureDevOpsApi::new();
-        let server = AzureMcpServer::new(mock);
+        let server = AzureMcpServer::new_with_api(mock);
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
@@ -22,6 +22,7 @@ mod tests {
         let response = client
             .post(format!("http://{}/mcp", addr))
             .header("Content-Type", "application/json")
+            .header("Accept", "application/json, text/event-stream")
             .body(r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}"#)
             .send()
             .await
@@ -39,7 +40,7 @@ mod tests {
     #[tokio::test]
     async fn test_http_server_rejects_invalid_method() {
         let mock = MockAzureDevOpsApi::new();
-        let server = AzureMcpServer::new(mock);
+        let server = AzureMcpServer::new_with_api(mock);
 
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
