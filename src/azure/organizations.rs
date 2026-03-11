@@ -41,7 +41,10 @@ pub async fn list_organizations(
     client: &AzureDevOpsClient,
     member_id: &str,
 ) -> Result<Vec<Organization>, AzureError> {
-    let path = format!("accounts?memberId={}&api-version=7.1", urlencoding::encode(member_id));
+    let path = format!(
+        "accounts?memberId={}&api-version=7.1",
+        urlencoding::encode(member_id)
+    );
     let response: OrganizationListResponse = client
         .vssps_request(Method::GET, &path, None::<&String>)
         .await?;

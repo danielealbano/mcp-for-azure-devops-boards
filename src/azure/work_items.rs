@@ -77,7 +77,10 @@ pub async fn get_comments(
         }
 
         if let Some(token) = &continuation_token {
-            path.push_str(&format!("&continuationToken={}", urlencoding::encode(token)));
+            path.push_str(&format!(
+                "&continuationToken={}",
+                urlencoding::encode(token)
+            ));
         }
 
         let (response, headers): (CommentListResponse, _) = client
@@ -179,7 +182,10 @@ pub async fn create_work_item(
     for (field, format) in multiline_fields_format {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/multilineFieldsFormat/{}", escape_json_pointer_token(field)),
+            path: format!(
+                "/multilineFieldsFormat/{}",
+                escape_json_pointer_token(field)
+            ),
             value: Some(Value::String(format.to_string())),
             from: None,
         });
@@ -194,7 +200,10 @@ pub async fn create_work_item(
         });
     }
 
-    let path = format!("wit/workitems/${}?api-version=7.1", urlencoding::encode(work_item_type));
+    let path = format!(
+        "wit/workitems/${}?api-version=7.1",
+        urlencoding::encode(work_item_type)
+    );
     client
         .post_patch(organization, project, &path, &operations)
         .await
@@ -213,7 +222,10 @@ pub async fn update_work_item(
     for (field, format) in multiline_fields_format {
         operations.push(JsonPatchOperation {
             op: "add".to_string(),
-            path: format!("/multilineFieldsFormat/{}", escape_json_pointer_token(field)),
+            path: format!(
+                "/multilineFieldsFormat/{}",
+                escape_json_pointer_token(field)
+            ),
             value: Some(Value::String(format.to_string())),
             from: None,
         });

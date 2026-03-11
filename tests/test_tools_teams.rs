@@ -227,7 +227,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("AlphaTeam"),
             "Output should contain AlphaTeam"
@@ -262,7 +264,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("AlphaTeam"),
             "Output should contain team name"
@@ -306,7 +310,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("Alice Smith"),
             "Output should contain display_name"
@@ -342,7 +348,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("No current iteration found"),
             "Output should indicate no current iteration"

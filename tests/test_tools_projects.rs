@@ -86,7 +86,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("ProjectAlpha"),
             "Output should contain ProjectAlpha"

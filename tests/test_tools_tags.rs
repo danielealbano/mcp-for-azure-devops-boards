@@ -83,8 +83,13 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("bug"), "Output should contain 'bug'");
-        assert!(content.contains("feature"), "Output should contain 'feature'");
+        assert!(
+            content.contains("feature"),
+            "Output should contain 'feature'"
+        );
     }
 }

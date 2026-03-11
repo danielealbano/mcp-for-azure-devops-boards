@@ -457,8 +457,7 @@ mod tests {
             QueryWorkItemsArgsWiql {
                 organization: "org".to_string(),
                 project: "proj".to_string(),
-                query: "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'New'"
-                    .to_string(),
+                query: "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'New'".to_string(),
                 include_latest_n_comments: None,
             },
         )
@@ -550,7 +549,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
         assert!(content.contains("Bug"), "Output should contain Type");
         assert!(
@@ -562,8 +563,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_work_item_not_found_returns_message() {
         let mut mock = MockAzureDevOpsApi::new();
-        mock.expect_get_work_item()
-            .returning(|_, _, _, _| Ok(None));
+        mock.expect_get_work_item().returning(|_, _, _, _| Ok(None));
 
         let result = get_work_item(
             &mock,
@@ -578,7 +578,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("Work item not found"),
             "Output should contain 'Work item not found'"
@@ -592,10 +594,7 @@ mod tests {
             let mut fields1 = HashMap::new();
             fields1.insert("System.Title".to_string(), serde_json::json!("Item One"));
             fields1.insert("System.State".to_string(), serde_json::json!("New"));
-            fields1.insert(
-                "System.WorkItemType".to_string(),
-                serde_json::json!("Bug"),
-            );
+            fields1.insert("System.WorkItemType".to_string(), serde_json::json!("Bug"));
 
             let mut fields2 = HashMap::new();
             fields2.insert("System.Title".to_string(), serde_json::json!("Item Two"));
@@ -634,9 +633,17 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
-        assert!(content.contains("Item One"), "Output should contain 'Item One'");
-        assert!(content.contains("Item Two"), "Output should contain 'Item Two'");
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
+        assert!(
+            content.contains("Item One"),
+            "Output should contain 'Item One'"
+        );
+        assert!(
+            content.contains("Item Two"),
+            "Output should contain 'Item Two'"
+        );
     }
 
     #[tokio::test]
@@ -656,7 +663,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("No work items found"),
             "Output should contain 'No work items found'"
@@ -703,7 +712,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
     }
 
@@ -746,7 +757,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
     }
 
@@ -790,7 +803,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
         assert!(
             content.contains("Test Work Item"),
@@ -838,7 +853,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("No work items found"),
             "Output should contain 'No work items found'"
@@ -856,8 +873,7 @@ mod tests {
             QueryWorkItemsArgsWiql {
                 organization: "org".to_string(),
                 project: "proj".to_string(),
-                query: "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'New'"
-                    .to_string(),
+                query: "SELECT [System.Id] FROM WorkItems WHERE [System.State] = 'New'".to_string(),
                 include_latest_n_comments: None,
             },
         )
@@ -865,7 +881,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain work item id");
         assert!(
             content.contains("Test Work Item"),
@@ -893,7 +911,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("42"), "Output should contain result data");
     }
 
@@ -917,8 +937,13 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
-        assert!(content.contains("test comment"), "Output should contain comment text");
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
+        assert!(
+            content.contains("test comment"),
+            "Output should contain comment text"
+        );
     }
 
     #[tokio::test]
@@ -943,7 +968,9 @@ mod tests {
         .unwrap();
 
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("updated comment"),
             "Output should contain updated comment text"

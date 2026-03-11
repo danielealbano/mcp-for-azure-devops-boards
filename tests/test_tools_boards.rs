@@ -236,7 +236,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("SprintBoard"),
             "Output should contain board name"
@@ -286,7 +288,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("board-42"),
             "Output should contain board id"
@@ -324,7 +328,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(content.contains("name"), "CSV should contain name header");
         assert!(
             content.contains("item_limit"),
@@ -367,7 +373,9 @@ mod tests {
         .await
         .unwrap();
         let text = extract_text_from_result(&result);
-        let content = text.strip_prefix(UNTRUSTED_CONTENT_WARNING).unwrap_or(&text);
+        let content = text
+            .strip_prefix(UNTRUSTED_CONTENT_WARNING)
+            .unwrap_or(&text);
         assert!(
             content.contains("Expedite"),
             "Output should contain row name"

@@ -52,4 +52,3 @@ pub struct WorkItemReference {
     pub id: u32,
     pub url: String,
 }
-

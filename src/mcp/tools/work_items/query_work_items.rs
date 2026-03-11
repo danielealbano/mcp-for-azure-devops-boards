@@ -149,10 +149,16 @@ pub async fn query_work_items(
 
     // Date filters
     if let Some(date) = &args.created_date_from {
-        conditions.push(format!("[System.CreatedDate] >= '{}'", date.replace("'", "''")));
+        conditions.push(format!(
+            "[System.CreatedDate] >= '{}'",
+            date.replace("'", "''")
+        ));
     }
     if let Some(date) = &args.created_date_to {
-        conditions.push(format!("[System.CreatedDate] <= '{}'", date.replace("'", "''")));
+        conditions.push(format!(
+            "[System.CreatedDate] <= '{}'",
+            date.replace("'", "''")
+        ));
     }
     if let Some(date) = &args.state_change_date_from {
         conditions.push(format!(
@@ -167,10 +173,16 @@ pub async fn query_work_items(
         ));
     }
     if let Some(date) = &args.changed_date_from {
-        conditions.push(format!("[System.ChangedDate] >= '{}'", date.replace("'", "''")));
+        conditions.push(format!(
+            "[System.ChangedDate] >= '{}'",
+            date.replace("'", "''")
+        ));
     }
     if let Some(date) = &args.changed_date_to {
-        conditions.push(format!("[System.ChangedDate] <= '{}'", date.replace("'", "''")));
+        conditions.push(format!(
+            "[System.ChangedDate] <= '{}'",
+            date.replace("'", "''")
+        ));
     }
 
     // Include filters (using IN operator)

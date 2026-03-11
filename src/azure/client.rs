@@ -104,7 +104,11 @@ impl AzureDevOpsClient {
         body: Option<&(impl Serialize + ?Sized)>,
     ) -> Result<T, AzureError> {
         let token = self.get_token().await?;
-        let url = format!("https://dev.azure.com/{}/_apis/{}", urlencoding::encode(organization), path);
+        let url = format!(
+            "https://dev.azure.com/{}/_apis/{}",
+            urlencoding::encode(organization),
+            path
+        );
 
         log::debug!("ORG Request: {} {}", method, url);
         if let Some(b) = &body
