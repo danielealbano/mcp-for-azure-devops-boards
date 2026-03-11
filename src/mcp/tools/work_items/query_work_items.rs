@@ -149,28 +149,28 @@ pub async fn query_work_items(
 
     // Date filters
     if let Some(date) = &args.created_date_from {
-        conditions.push(format!("[System.CreatedDate] >= '{}'", date));
+        conditions.push(format!("[System.CreatedDate] >= '{}'", date.replace("'", "''")));
     }
     if let Some(date) = &args.created_date_to {
-        conditions.push(format!("[System.CreatedDate] <= '{}'", date));
+        conditions.push(format!("[System.CreatedDate] <= '{}'", date.replace("'", "''")));
     }
     if let Some(date) = &args.state_change_date_from {
         conditions.push(format!(
             "[Microsoft.VSTS.Common.StateChangeDate] >= '{}'",
-            date
+            date.replace("'", "''")
         ));
     }
     if let Some(date) = &args.state_change_date_to {
         conditions.push(format!(
             "[Microsoft.VSTS.Common.StateChangeDate] <= '{}'",
-            date
+            date.replace("'", "''")
         ));
     }
     if let Some(date) = &args.changed_date_from {
-        conditions.push(format!("[System.ChangedDate] >= '{}'", date));
+        conditions.push(format!("[System.ChangedDate] >= '{}'", date.replace("'", "''")));
     }
     if let Some(date) = &args.changed_date_to {
-        conditions.push(format!("[System.ChangedDate] <= '{}'", date));
+        conditions.push(format!("[System.ChangedDate] <= '{}'", date.replace("'", "''")));
     }
 
     // Include filters (using IN operator)
@@ -316,7 +316,7 @@ pub async fn query_work_items(
         // If no filters specified, query all work items in the project
         format!(
             "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '{}'",
-            args.project
+            args.project.replace("'", "''")
         )
     } else {
         format!(
@@ -347,7 +347,11 @@ pub async fn query_work_items(
     }
 
     // Convert to JSON value, simplify, then convert to CSV
-    let mut json_value = serde_json::to_value(&work_items).unwrap();
+    let mut json_value = serde_json::to_value(&work_items).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
     simplify_work_item_json(&mut json_value);
     let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
         code: ErrorCode(-32000),

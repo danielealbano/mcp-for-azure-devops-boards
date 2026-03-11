@@ -283,13 +283,20 @@ pub async fn update_work_item(
             data: None,
         })?;
 
-    // Convert to JSON value, simplify, then serialize
-    let mut json_value = serde_json::to_value(&work_item).unwrap();
+    let mut json_value = serde_json::to_value(&work_item).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
     simplify_work_item_json(&mut json_value);
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&json_value).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&json_value).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }
 
 #[cfg(test)]

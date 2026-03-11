@@ -18,6 +18,7 @@ pub struct GetTeamArgs {
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub project: String,
     /// Team ID or name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub team_id: String,
 }
 

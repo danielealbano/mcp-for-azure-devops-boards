@@ -10,10 +10,19 @@ static RE_TRAILING_WS: Lazy<Regex> = Lazy::new(|| Regex::new(r"[ ]+\n").unwrap()
 static RE_DASHES: Lazy<Regex> = Lazy::new(|| Regex::new(r"-{3,}\n").unwrap());
 static RE_IMAGE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)\[image\]").unwrap());
 
+const MAX_RECURSION_DEPTH: usize = 64;
+
 /// Recursively simplifies the JSON output to reduce token usage for LLMs.
 /// It removes "_links", "url", "descriptor", "imageUrl", "avatar" and simplifies field names.
 /// It also flattens the "fields" object to the root level and removes redundant properties.
 pub fn simplify_work_item_json(value: &mut Value) {
+    simplify_work_item_json_inner(value, 0);
+}
+
+fn simplify_work_item_json_inner(value: &mut Value, depth: usize) {
+    if depth > MAX_RECURSION_DEPTH {
+        return;
+    }
     match value {
         Value::Object(map) => {
             // Remove unnecessary fields at the top level and in nested objects
@@ -148,15 +157,13 @@ pub fn simplify_work_item_json(value: &mut Value) {
                 }
             }
 
-            // Recursively process all remaining values
             for (_, v) in map.iter_mut() {
-                simplify_work_item_json(v);
+                simplify_work_item_json_inner(v, depth + 1);
             }
         }
         Value::Array(arr) => {
-            // Recursively process all array elements
             for item in arr.iter_mut() {
-                simplify_work_item_json(item);
+                simplify_work_item_json_inner(item, depth + 1);
             }
         }
         _ => {}

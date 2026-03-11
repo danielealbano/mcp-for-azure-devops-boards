@@ -7,30 +7,51 @@ use hyper_util::{
 use rmcp::transport::streamable_http_server::{
     StreamableHttpService, session::local::LocalSessionManager,
 };
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::sync::Semaphore;
 
-pub async fn run_server(server: AzureMcpServer, port: u16) -> std::io::Result<()> {
+const MAX_CONNECTIONS: usize = 256;
+const CONNECTION_TIMEOUT: Duration = Duration::from_secs(60);
+
+pub async fn run_server(
+    server: AzureMcpServer,
+    listener: tokio::net::TcpListener,
+) -> std::io::Result<()> {
     let service = TowerToHyperService::new(StreamableHttpService::new(
         move || Ok(server.clone()),
         LocalSessionManager::default().into(),
         Default::default(),
     ));
 
-    let addr = format!("0.0.0.0:{}", port);
-    let listener = tokio::net::TcpListener::bind(&addr).await?;
-    println!("Listening on http://{}", addr);
+    let semaphore = Arc::new(Semaphore::new(MAX_CONNECTIONS));
 
     loop {
         let (stream, _) = listener.accept().await?;
+        let permit = match semaphore.clone().acquire_owned().await {
+            Ok(permit) => permit,
+            Err(e) => {
+                log::error!("Failed to acquire connection permit: {:?}", e);
+                continue;
+            }
+        };
         let io = TokioIo::new(stream);
         let service = service.clone();
 
         tokio::spawn(async move {
-            if let Err(err) = Builder::new(TokioExecutor::default())
-                .serve_connection(io, service)
-                .await
-            {
-                eprintln!("Error serving connection: {:?}", err);
+            let result = tokio::time::timeout(
+                CONNECTION_TIMEOUT,
+                Builder::new(TokioExecutor::default()).serve_connection(io, service),
+            )
+            .await;
+
+            match result {
+                Ok(Ok(())) => {}
+                Ok(Err(err)) => log::error!("Error serving connection: {:?}", err),
+                Err(_) => log::warn!("Connection timed out after {:?}", CONNECTION_TIMEOUT),
             }
+
+            drop(permit);
         });
     }
 }

@@ -75,14 +75,24 @@ jobs:
       - name: List downloaded files (debug)
         run: ls -R dist
 
+      - name: Prepare Linux tar.gz
+        run: |
+          set -eux
+          TAG="${GITHUB_REF_NAME}"
+          LINUX_DIR="dist/mcp-for-azure-devops-boards-ubuntu-24.04-aarch64"
+          cp "${LINUX_DIR}/mcp-for-azure-devops-boards-ubuntu-24.04-aarch64" mcp-for-azure-devops-boards
+          tar czf "mcp-for-azure-devops-boards-${TAG}-linux-aarch64.tar.gz" mcp-for-azure-devops-boards
+          rm mcp-for-azure-devops-boards
+          ls -l "mcp-for-azure-devops-boards-${TAG}-linux-aarch64.tar.gz"
+
       - name: Prepare macOS tar.gz
         run: |
           set -eux
           TAG="${GITHUB_REF_NAME}"
-          # artifact directory is dist/<artifact-name>/...
           MAC_DIR="dist/mcp-for-azure-devops-boards-macos-aarch64"
           cp "${MAC_DIR}/mcp-for-azure-devops-boards-macos-aarch64" mcp-for-azure-devops-boards
           tar czf "mcp-for-azure-devops-boards-${TAG}-macos-aarch64.tar.gz" mcp-for-azure-devops-boards
+          rm mcp-for-azure-devops-boards
           ls -l "mcp-for-azure-devops-boards-${TAG}-macos-aarch64.tar.gz"
 
       - name: Prepare Windows zip
@@ -105,6 +115,7 @@ jobs:
           name: ${{ github.ref_name }}
           generate_release_notes: true
           files: |
+            mcp-for-azure-devops-boards-${{ github.ref_name }}-linux-aarch64.tar.gz
             mcp-for-azure-devops-boards-${{ github.ref_name }}-macos-aarch64.tar.gz
             mcp-for-azure-devops-boards-${{ github.ref_name }}-windows-x86_64.zip
         env:

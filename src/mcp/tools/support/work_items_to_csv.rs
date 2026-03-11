@@ -1,3 +1,4 @@
+use super::sanitize_csv_value;
 use crate::compact_llm;
 use serde_json::Value;
 
@@ -73,14 +74,7 @@ pub fn work_items_to_csv(json_value: &Value) -> Result<String, String> {
             .map(|field| {
                 item.get(*field)
                     .and_then(|v| match v {
-                        Value::String(s) => {
-                            // Escape newlines and tabs for better LLM consumption
-                            let escaped = s
-                                .replace('\n', "\\n")
-                                .replace('\t', "\\t")
-                                .replace('\r', ""); // Remove carriage returns entirely
-                            Some(escaped)
-                        }
+                        Value::String(s) => Some(sanitize_csv_value(s)),
                         Value::Number(n) => Some(n.to_string()),
                         Value::Bool(b) => Some(b.to_string()),
                         Value::Array(_) if *field == "comments" => {

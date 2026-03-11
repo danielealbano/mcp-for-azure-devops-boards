@@ -26,8 +26,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mcp_server = AzureMcpServer::new(client);
 
     if args.server {
-        log::info!("Starting web server on port {}", args.port);
-        http::run_server(mcp_server, args.port).await?;
+        let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", args.port)).await?;
+        log::info!("Starting web server on {}", listener.local_addr()?);
+        http::run_server(mcp_server, listener).await?;
     } else {
         log::info!("Starting stdio server");
         let service = mcp_server.serve(stdio()).await?;

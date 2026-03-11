@@ -15,13 +15,22 @@ pub fn to_compact_string<T: Serialize>(value: &T) -> Result<String, serde_json::
     Ok(output)
 }
 
+const MAX_RECURSION_DEPTH: usize = 64;
+
 fn write_compact_value(value: &serde_json::Value, output: &mut String) {
+    write_compact_value_inner(value, output, 0);
+}
+
+fn write_compact_value_inner(value: &serde_json::Value, output: &mut String, depth: usize) {
+    if depth > MAX_RECURSION_DEPTH {
+        output.push_str("...");
+        return;
+    }
     match value {
         serde_json::Value::Null => output.push_str("null"),
         serde_json::Value::Bool(b) => output.push_str(if *b { "true" } else { "false" }),
         serde_json::Value::Number(n) => output.push_str(&n.to_string()),
         serde_json::Value::String(s) => {
-            // Always write strings without quotes, only escape newlines
             let escaped = s.replace('\n', "\\n").replace('\r', "\\r");
             output.push_str(&escaped);
         }
@@ -31,7 +40,7 @@ fn write_compact_value(value: &serde_json::Value, output: &mut String) {
                 if i > 0 {
                     output.push(',');
                 }
-                write_compact_value(item, output);
+                write_compact_value_inner(item, output, depth + 1);
             }
             output.push(']');
         }
@@ -41,11 +50,10 @@ fn write_compact_value(value: &serde_json::Value, output: &mut String) {
                 if i > 0 {
                     output.push(',');
                 }
-                // Write key without quotes
                 let escaped_key = key.replace('\n', "\\n").replace('\r', "\\r");
                 output.push_str(&escaped_key);
                 output.push(':');
-                write_compact_value(val, output);
+                write_compact_value_inner(val, output, depth + 1);
             }
             output.push('}');
         }

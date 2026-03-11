@@ -22,6 +22,7 @@ pub struct LinkWorkItemsArgs {
     /// Target work item ID
     pub target_id: u32,
     /// Link type: "Parent", "Child", "Related", "Duplicate", "Dependency"
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub link_type: String,
 }
 
@@ -62,7 +63,11 @@ pub async fn link_work_items(
             data: None,
         })?;
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&result).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&result).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }

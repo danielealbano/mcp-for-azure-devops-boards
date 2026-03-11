@@ -40,7 +40,11 @@ pub async fn list_work_item_types(
     // Extract just the work item type names for compact response
     let type_names: Vec<String> = types.into_iter().map(|wit| wit.name).collect();
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&type_names).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&type_names).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }

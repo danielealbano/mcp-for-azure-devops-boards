@@ -21,9 +21,9 @@ Prevents URL injection, WIQL injection, and invalid JSON Patch paths.
 
 ### Acceptance Criteria
 
-- [ ] All user-controlled strings interpolated into URLs are percent-encoded
-- [ ] WIQL project and date fields use single-quote escaping
-- [ ] JSON Patch field names are RFC 6901 escaped
+- [x] All user-controlled strings interpolated into URLs are percent-encoded
+- [x] WIQL project and date fields use single-quote escaping
+- [x] JSON Patch field names are RFC 6901 escaped
 
 ---
 
@@ -61,13 +61,13 @@ let url = format!(
 
 **DoD**:
 
-- [ ] `request_with_content_type`: `organization` and `project` encoded
-- [ ] `org_request`: `organization` encoded
-- [ ] `team_request`: `organization`, `project`, `team` encoded
-- [ ] `get_with_headers`: `organization` and `project` encoded
-- [ ] `post_binary`: `organization` and `project` encoded
-- [ ] `get_binary`: `organization` and `project` encoded
-- [ ] `vssps_request` unchanged (no user-controlled path segments in base URL)
+- [x] `request_with_content_type`: `organization` and `project` encoded
+- [x] `org_request`: `organization` encoded
+- [x] `team_request`: `organization`, `project`, `team` encoded
+- [x] `get_with_headers`: `organization` and `project` encoded
+- [x] `post_binary`: `organization` and `project` encoded
+- [x] `get_binary`: `organization` and `project` encoded
+- [x] `vssps_request` unchanged (no user-controlled path segments in base URL)
 
 ---
 
@@ -144,11 +144,11 @@ let path = format!("wit/workitems/${}?api-version=7.1", urlencoding::encode(work
 
 **DoD**:
 
-- [ ] `boards.rs`: `project`, `team_id`, `board_id` encoded in all paths
-- [ ] `teams.rs`: `project`, `team_id` encoded
-- [ ] `organizations.rs`: `member_id` encoded
-- [ ] `iterations.rs`: `timeframe` encoded
-- [ ] `work_items.rs`: `continuation_token` and `work_item_type` encoded
+- [x] `boards.rs`: `project`, `team_id`, `board_id` encoded in all paths
+- [x] `teams.rs`: `project`, `team_id` encoded
+- [x] `organizations.rs`: `member_id` encoded
+- [x] `iterations.rs`: `timeframe` encoded
+- [x] `work_items.rs`: `continuation_token` and `work_item_type` encoded
 
 ---
 
@@ -194,8 +194,8 @@ if let Some(date) = &args.changed_date_to {
 
 **DoD**:
 
-- [ ] `args.project` escaped in WIQL WHERE clause
-- [ ] All 6 date fields (`created_date_from/to`, `state_change_date_from/to`, `changed_date_from/to`) escaped
+- [x] `args.project` escaped in WIQL WHERE clause
+- [x] All 6 date fields (`created_date_from/to`, `state_change_date_from/to`, `changed_date_from/to`) escaped
 
 ---
 
@@ -231,8 +231,8 @@ path: format!("/fields/{}", escape_json_pointer_token(field)),
 
 **DoD**:
 
-- [ ] `escape_json_pointer_token` helper added
-- [ ] All 4 JSON Patch path constructions use the helper
+- [x] `escape_json_pointer_token` helper added
+- [x] All 4 JSON Patch path constructions use the helper
 
 ---
 
@@ -242,7 +242,7 @@ Prevents spreadsheet applications from interpreting cell values as formulas.
 
 ### Acceptance Criteria
 
-- [ ] String values starting with `=`, `+`, `-`, `@` are prefixed with a single quote in CSV output
+- [x] String values starting with `=`, `+`, `-`, `@` are prefixed with a single quote in CSV output
 
 ---
 
@@ -286,9 +286,9 @@ Add `mod csv_sanitize;` and `pub use csv_sanitize::sanitize_csv_value;`.
 
 **DoD**:
 
-- [ ] `sanitize_csv_value` function created in `csv_sanitize.rs`
-- [ ] `work_items_to_csv.rs` uses `sanitize_csv_value` for string values
-- [ ] `board_columns_to_csv.rs` uses `sanitize_csv_value` for `name` and `column_type`
+- [x] `sanitize_csv_value` function created in `csv_sanitize.rs`
+- [x] `work_items_to_csv.rs` uses `sanitize_csv_value` for string values
+- [x] `board_columns_to_csv.rs` uses `sanitize_csv_value` for `name` and `column_type`
 
 ---
 
@@ -296,9 +296,9 @@ Add `mod csv_sanitize;` and `pub use csv_sanitize::sanitize_csv_value;`.
 
 ### Acceptance Criteria
 
-- [ ] No duplicate board types between `models.rs` and `boards.rs`
-- [ ] Zero `unwrap()` on `serde_json::to_value` or `compact_llm::to_compact_string` in MCP tool files
-- [ ] All required string identifier fields validate non-empty
+- [x] No duplicate board types between `models.rs` and `boards.rs`
+- [x] Zero `unwrap()` on `serde_json::to_value` or `compact_llm::to_compact_string` in MCP tool files
+- [x] All required string identifier fields validate non-empty
 
 ---
 
@@ -312,8 +312,8 @@ Before removing, verify no file imports these types from `models.rs` (only from 
 
 **DoD**:
 
-- [ ] `BoardListResponse`, `BoardReference`, `BoardColumn`, `Board` removed from `models.rs`
-- [ ] No compile errors after removal (confirms they were unused)
+- [x] `BoardListResponse`, `BoardReference`, `BoardColumn`, `Board` removed from `models.rs`
+- [x] No compile errors after removal (confirms they were unused)
 
 ---
 
@@ -367,8 +367,8 @@ Files that need ONLY `compact_llm::to_compact_string` fixed: `get_team_board.rs`
 
 **DoD**:
 
-- [ ] Zero `unwrap()` on serialization calls in all 11 listed tool files
-- [ ] All use `.map_err(...)` with `ErrorCode(-32000)` and descriptive message
+- [x] Zero `unwrap()` on serialization calls in all 11 listed tool files
+- [x] All use `.map_err(...)` with `ErrorCode(-32000)` and descriptive message
 
 ---
 
@@ -392,8 +392,8 @@ Each field gets the `#[serde(deserialize_with = "deserialize_non_empty_string")]
 
 **DoD**:
 
-- [ ] All 9 files updated with validation on all listed fields
-- [ ] Each file imports `deserialize_non_empty_string`
+- [x] All 9 files updated with validation on all listed fields
+- [x] Each file imports `deserialize_non_empty_string`
 
 ---
 
@@ -401,10 +401,10 @@ Each field gets the `#[serde(deserialize_with = "deserialize_non_empty_string")]
 
 ### Acceptance Criteria
 
-- [ ] Comment fetching runs concurrently (bounded to 10 parallel requests)
-- [ ] Recursion depth limited to 64 in JSON processing functions
-- [ ] HTTP server limits concurrent connections to 256 with 60s timeout
-- [ ] `BoardDetail::get_work_item_types` uses `HashSet` for deduplication
+- [x] Comment fetching runs concurrently (bounded to 10 parallel requests)
+- [x] Recursion depth limited to 64 in JSON processing functions
+- [x] HTTP server limits concurrent connections to 256 with 60s timeout
+- [x] `BoardDetail::get_work_item_types` uses `HashSet` for deduplication
 
 ---
 
@@ -455,9 +455,9 @@ if let Some(n) = include_latest_n_comments {
 
 **DoD**:
 
-- [ ] `futures` added to `Cargo.toml`
-- [ ] Comment fetching runs in chunks of 10 concurrent requests
-- [ ] Errors propagate correctly from concurrent fetches
+- [x] `futures` added to `Cargo.toml`
+- [x] Comment fetching runs in chunks of 10 concurrent requests
+- [x] Errors propagate correctly from concurrent fetches
 
 ---
 
@@ -517,9 +517,9 @@ fn write_compact_value_inner(value: &serde_json::Value, output: &mut String, dep
 
 **DoD**:
 
-- [ ] `simplify_work_item_json` stops recursion at depth 64
-- [ ] `write_compact_value` stops recursion at depth 64, outputs `...` for truncated nodes
-- [ ] Public API signature unchanged (depth is internal)
+- [x] `simplify_work_item_json` stops recursion at depth 64
+- [x] `write_compact_value` stops recursion at depth 64, outputs `...` for truncated nodes
+- [x] Public API signature unchanged (depth is internal)
 
 ---
 
@@ -604,11 +604,11 @@ if args.server {
 
 **DoD**:
 
-- [ ] `run_server` accepts `TcpListener` instead of `port`
-- [ ] Semaphore limits concurrent connections to 256
-- [ ] Per-connection timeout of 60 seconds
-- [ ] `main.rs` creates listener and passes it
-- [ ] Logging uses `log::error!`/`log::warn!` instead of `eprintln!`
+- [x] `run_server` accepts `TcpListener` instead of `port`
+- [x] Semaphore limits concurrent connections to 256
+- [x] Per-connection timeout of 60 seconds
+- [x] `main.rs` creates listener and passes it
+- [x] Logging uses `log::error!`/`log::warn!` instead of `eprintln!`
 
 ---
 
@@ -642,7 +642,7 @@ impl BoardDetail {
 
 **DoD**:
 
-- [ ] Deduplication uses `HashSet` instead of `Vec::contains`
+- [x] Deduplication uses `HashSet` instead of `Vec::contains`
 
 ---
 
@@ -650,9 +650,9 @@ impl BoardDetail {
 
 ### Acceptance Criteria
 
-- [ ] Docker runtime image runs as non-root user
-- [ ] CI runs clippy and cargo-audit
-- [ ] CD packages Linux aarch64 binary in release
+- [x] Docker runtime image runs as non-root user
+- [x] CI runs clippy and cargo-audit
+- [x] CD packages Linux aarch64 binary in release
 
 ---
 
@@ -676,9 +676,9 @@ ENTRYPOINT ["mcp-for-azure-devops-boards"]
 
 **DoD**:
 
-- [ ] `appuser` created in runtime stage
-- [ ] `WORKDIR /app` NOT duplicated (already exists)
-- [ ] `USER appuser` directive set before `ENTRYPOINT`
+- [x] `appuser` created in runtime stage
+- [x] `WORKDIR /app` NOT duplicated (already exists)
+- [x] `USER appuser` directive set before `ENTRYPOINT`
 
 ---
 
@@ -724,8 +724,8 @@ Add a new job for security audit:
 
 **DoD**:
 
-- [ ] Clippy runs on all matrix platforms with `-D warnings`
-- [ ] `cargo audit` runs in a separate job
+- [x] Clippy runs on all matrix platforms with `-D warnings`
+- [x] `cargo audit` runs in a separate job
 
 ---
 
@@ -772,9 +772,9 @@ Also modify the existing macOS step to clean up the intermediate file after tarr
 
 **DoD**:
 
-- [ ] Linux aarch64 tar.gz prepared in release job
-- [ ] Linux archive included in `files:` list
-- [ ] No file name collisions between Linux and macOS preparation steps
+- [x] Linux aarch64 tar.gz prepared in release job
+- [x] Linux archive included in `files:` list
+- [x] No file name collisions between Linux and macOS preparation steps
 
 ---
 

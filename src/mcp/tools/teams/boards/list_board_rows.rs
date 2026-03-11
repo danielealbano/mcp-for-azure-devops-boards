@@ -18,8 +18,10 @@ pub struct ListBoardRowsArgs {
     #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub project: String,
     /// Team ID or name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub team_id: String,
     /// Board ID or name
+    #[serde(deserialize_with = "deserialize_non_empty_string")]
     pub board_id: String,
 }
 
@@ -56,7 +58,11 @@ pub async fn list_board_rows(
         .map(|row| row.name.unwrap_or_default())
         .collect();
 
-    Ok(tool_text_success(
-        compact_llm::to_compact_string(&row_names).unwrap(),
-    ))
+    let output = compact_llm::to_compact_string(&row_names).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
+
+    Ok(tool_text_success(output))
 }

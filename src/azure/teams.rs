@@ -29,7 +29,8 @@ pub async fn list_team_members(
 ) -> Result<Vec<TeamMember>, AzureError> {
     let path = format!(
         "projects/{}/teams/{}/members?api-version=7.1",
-        project, team_id
+        urlencoding::encode(project),
+        urlencoding::encode(team_id)
     );
     let response: TeamMembersResponse = client
         .org_request(organization, Method::GET, &path, None::<&String>)

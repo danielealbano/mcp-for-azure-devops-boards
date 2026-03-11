@@ -70,7 +70,7 @@ pub async fn get_team_iterations(
     let path = if let Some(tf) = timeframe {
         format!(
             "work/teamsettings/iterations?$timeframe={}&api-version=7.1",
-            tf
+            urlencoding::encode(tf)
         )
     } else {
         "work/teamsettings/iterations?api-version=7.1".to_string()

@@ -59,7 +59,11 @@ pub async fn get_work_items(
     }
 
     // Convert to JSON value, simplify, then convert to CSV
-    let mut json_value = serde_json::to_value(&work_items).unwrap();
+    let mut json_value = serde_json::to_value(&work_items).map_err(|e| McpError {
+        code: ErrorCode(-32000),
+        message: format!("Failed to serialize response: {}", e).into(),
+        data: None,
+    })?;
     simplify_work_item_json(&mut json_value);
     let csv_output = work_items_to_csv(&json_value).map_err(|e| McpError {
         code: ErrorCode(-32000),
