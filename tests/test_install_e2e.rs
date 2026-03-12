@@ -100,7 +100,7 @@ async fn test_e2e_gemini_cli_recognizes_config() {
         InstallTarget::GeminiCli,
         "/root/.gemini/settings.json",
         vec!["gemini".to_string(), "mcp".to_string(), "list".to_string()],
-        vec![("GOOGLE_GENAI_USE_GCA", "true")],
+        vec![("GEMINI_API_KEY", "dummy")],
     )
     .await;
 }

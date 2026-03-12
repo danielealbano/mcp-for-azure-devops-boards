@@ -37,9 +37,9 @@ clean:
 
 # Build Docker images for E2E tests
 test-e2e-build:
-	docker build -t mcp-test-claude-code tests/docker/claude-code/
-	docker build -t mcp-test-cursor tests/docker/cursor/
-	docker build -t mcp-test-gemini-cli tests/docker/gemini-cli/
+	docker build --load -t mcp-test-claude-code tests/docker/claude-code/
+	docker build --load -t mcp-test-cursor tests/docker/cursor/
+	docker build --load -t mcp-test-gemini-cli tests/docker/gemini-cli/
 
 # Run E2E testcontainers tests (requires Docker)
 test-e2e: test-e2e-build
