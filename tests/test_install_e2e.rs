@@ -1,3 +1,5 @@
+#![cfg(feature = "e2e-tests")]
+
 use std::path::PathBuf;
 
 use base64::Engine;
@@ -62,7 +64,6 @@ async fn run_e2e_install_test(
     );
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_e2e_claude_code_recognizes_config() {
     run_e2e_install_test(
@@ -74,7 +75,6 @@ async fn test_e2e_claude_code_recognizes_config() {
     .await;
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_e2e_cursor_recognizes_config() {
     run_e2e_install_test(
@@ -86,7 +86,6 @@ async fn test_e2e_cursor_recognizes_config() {
     .await;
 }
 
-#[ignore]
 #[tokio::test]
 async fn test_e2e_gemini_cli_recognizes_config() {
     run_e2e_install_test(

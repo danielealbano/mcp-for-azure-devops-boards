@@ -43,7 +43,7 @@ test-e2e-build:
 
 # Run E2E testcontainers tests (requires Docker)
 test-e2e: test-e2e-build
-	cargo test --features test-support --ignored
+	cargo test --features test-support,e2e-tests
 
 # Show help
 help:

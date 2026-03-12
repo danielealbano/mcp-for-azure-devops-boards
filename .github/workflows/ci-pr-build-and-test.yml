@@ -44,7 +44,7 @@ jobs:
         run: cargo clippy --features test-support --locked -- -D warnings
 
       - name: Test
-        run: cargo test --release --locked --all-features
+        run: cargo test --release --locked --features test-support
 
   e2e-tests:
     name: E2E Tests
@@ -60,7 +60,7 @@ jobs:
         run: make test-e2e-build
 
       - name: Run E2E tests
-        run: cargo test --features test-support --locked --ignored
+        run: cargo test --features test-support,e2e-tests --locked
 
   security-audit:
     name: Security Audit
