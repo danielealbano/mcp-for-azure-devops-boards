@@ -77,7 +77,7 @@ impl fmt::Display for InstallTarget {
     }
 }
 
-pub fn resolve_config_path(target: &InstallTarget) -> Result<PathBuf, InstallError> {
+pub fn resolve_config_path(target: &InstallTarget) -> Result<PathBuf, Box<InstallError>> {
     match target {
         InstallTarget::ClaudeCode => {
             let home = dirs::home_dir().ok_or(InstallError::HomeDirectoryNotFound)?;
@@ -111,7 +111,7 @@ pub fn install(
     target: &InstallTarget,
     config_path: &Path,
     binary_path: &Path,
-) -> Result<String, InstallError> {
+) -> Result<String, Box<InstallError>> {
     if let Some(parent) = config_path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| InstallError::CreateDirectory {
             path: parent.to_path_buf(),
@@ -137,16 +137,16 @@ fn install_json(
     binary_path: &Path,
     servers_key: &str,
     include_type_stdio: bool,
-) -> Result<(), InstallError> {
+) -> Result<(), Box<InstallError>> {
     let content = match std::fs::read_to_string(config_path) {
         Ok(s) if s.is_empty() => "{}".to_string(),
         Ok(s) => s,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => "{}".to_string(),
         Err(e) => {
-            return Err(InstallError::ReadConfig {
+            return Err(Box::new(InstallError::ReadConfig {
                 path: config_path.to_path_buf(),
                 source: e,
-            });
+            }));
         }
     };
 
@@ -206,16 +206,16 @@ fn install_json(
     Ok(())
 }
 
-fn install_toml(config_path: &Path, binary_path: &Path) -> Result<(), InstallError> {
+fn install_toml(config_path: &Path, binary_path: &Path) -> Result<(), Box<InstallError>> {
     let content = match std::fs::read_to_string(config_path) {
         Ok(s) if s.is_empty() => String::new(),
         Ok(s) => s,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => String::new(),
         Err(e) => {
-            return Err(InstallError::ReadConfig {
+            return Err(Box::new(InstallError::ReadConfig {
                 path: config_path.to_path_buf(),
                 source: e,
-            });
+            }));
         }
     };
 
@@ -550,7 +550,7 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(
-            matches!(err, InstallError::ParseJson { .. }),
+            matches!(*err, InstallError::ParseJson { .. }),
             "expected ParseJson, got: {err}"
         );
     }
@@ -566,7 +566,7 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(
-            matches!(err, InstallError::ParseToml { .. }),
+            matches!(*err, InstallError::ParseToml { .. }),
             "expected ParseToml, got: {err}"
         );
     }
@@ -598,7 +598,7 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(
-            matches!(err, InstallError::InvalidConfigFormat { .. }),
+            matches!(*err, InstallError::InvalidConfigFormat { .. }),
             "expected InvalidConfigFormat, got: {err}"
         );
     }
