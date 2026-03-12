@@ -294,12 +294,12 @@ Verify config format compatibility with real CLI tools using Docker containers. 
 
 ### Acceptance Criteria
 
-- [ ] `testcontainers` dev-dependency added
-- [ ] Dockerfiles for test images (Claude Code, Cursor CLI, gemini-cli)
-- [ ] E2E tests for `claude-code`, `cursor`, `gemini-cli`
-- [ ] Tests verify real CLI tools recognize our generated config
-- [ ] Tests marked `#[ignore]` (opt-in via `cargo test --ignored`)
-- [ ] Makefile target for building test images and running E2E tests
+- [x] `testcontainers` dev-dependency added
+- [x] Dockerfiles for test images (Claude Code, Cursor CLI, gemini-cli)
+- [x] E2E tests for `claude-code`, `cursor`, `gemini-cli`
+- [x] Tests verify real CLI tools recognize our generated config
+- [x] Tests marked `#[ignore]` (opt-in via `cargo test --ignored`)
+- [x] Makefile target for building test images and running E2E tests
 
 ---
 
@@ -315,7 +315,7 @@ testcontainers = "0.27"
 
 **Definition of Done**:
 
-- [ ] `testcontainers` added to `[dev-dependencies]`
+- [x] `testcontainers` added to `[dev-dependencies]`
 
 ---
 
@@ -350,8 +350,8 @@ RUN npm install -g @google/gemini-cli
 
 **Definition of Done**:
 
-- [ ] All 3 Dockerfiles build successfully
-- [ ] CLI tools accessible inside containers (verified by running version commands)
+- [x] All 3 Dockerfiles build successfully
+- [x] CLI tools accessible inside containers (verified by running version commands)
 
 ---
 
@@ -378,8 +378,8 @@ RUN npm install -g @google/gemini-cli
 
 **Definition of Done**:
 
-- [ ] Tests are `#[ignore]` and do not run with `cargo test`
-- [ ] 3 E2E tests created (one per CLI-verifiable target)
+- [x] Tests are `#[ignore]` and do not run with `cargo test`
+- [x] 3 E2E tests created (one per CLI-verifiable target)
 
 ---
 
@@ -414,11 +414,11 @@ test-e2e: test-e2e-build
 
 **Definition of Done**:
 
-- [ ] `.PHONY` updated with `test-e2e-build` and `test-e2e`
-- [ ] `make test-e2e-build` builds all 3 Docker images
-- [ ] `make test-e2e` builds images and runs E2E tests
-- [ ] `make help` shows new targets
-- [ ] Existing Makefile targets unaffected
+- [x] `.PHONY` updated with `test-e2e-build` and `test-e2e`
+- [x] `make test-e2e-build` builds all 3 Docker images
+- [x] `make test-e2e` builds images and runs E2E tests
+- [x] `make help` shows new targets
+- [x] Existing Makefile targets unaffected
 
 ---
 
