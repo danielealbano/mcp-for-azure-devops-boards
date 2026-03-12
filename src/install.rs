@@ -96,9 +96,8 @@ pub fn resolve_config_path(target: &InstallTarget) -> Result<PathBuf, InstallErr
             Ok(home.join(".codex").join("config.toml"))
         }
         InstallTarget::Vscode => {
-            let cwd = std::env::current_dir().map_err(|e| InstallError::CurrentDirectoryNotFound {
-                source: e,
-            })?;
+            let cwd = std::env::current_dir()
+                .map_err(|e| InstallError::CurrentDirectoryNotFound { source: e })?;
             Ok(cwd.join(".vscode").join("mcp.json"))
         }
         InstallTarget::ClaudeDesktop => {
@@ -157,10 +156,12 @@ fn install_json(
             source: e,
         })?;
 
-    let root_obj = root.as_object_mut().ok_or_else(|| InstallError::InvalidConfigFormat {
-        path: config_path.to_path_buf(),
-        detail: "expected JSON object at root".to_string(),
-    })?;
+    let root_obj = root
+        .as_object_mut()
+        .ok_or_else(|| InstallError::InvalidConfigFormat {
+            path: config_path.to_path_buf(),
+            detail: "expected JSON object at root".to_string(),
+        })?;
 
     if !root_obj.contains_key(servers_key) {
         root_obj.insert(
@@ -190,10 +191,7 @@ fn install_json(
         serde_json::Value::String(binary_str.into_owned()),
     );
 
-    servers.insert(
-        SERVER_NAME.to_string(),
-        serde_json::Value::Object(entry),
-    );
+    servers.insert(SERVER_NAME.to_string(), serde_json::Value::Object(entry));
 
     let output = serde_json::to_string_pretty(&root).map_err(|e| InstallError::ParseJson {
         path: config_path.to_path_buf(),
@@ -221,11 +219,10 @@ fn install_toml(config_path: &Path, binary_path: &Path) -> Result<(), InstallErr
         }
     };
 
-    let mut root: toml::Value =
-        toml::from_str(&content).map_err(|e| InstallError::ParseToml {
-            path: config_path.to_path_buf(),
-            source: e,
-        })?;
+    let mut root: toml::Value = toml::from_str(&content).map_err(|e| InstallError::ParseToml {
+        path: config_path.to_path_buf(),
+        source: e,
+    })?;
 
     let root_table = root
         .as_table_mut()
@@ -290,9 +287,11 @@ mod tests {
             content["mcpServers"]["mcp-for-azure-devops-boards"]["command"],
             TEST_BINARY_PATH
         );
-        assert!(content["mcpServers"]["mcp-for-azure-devops-boards"]
-            .get("type")
-            .is_none());
+        assert!(
+            content["mcpServers"]["mcp-for-azure-devops-boards"]
+                .get("type")
+                .is_none()
+        );
     }
 
     #[test]
@@ -530,7 +529,10 @@ mod tests {
 
         let msg = install(&InstallTarget::ClaudeCode, &config_path, &binary_path()).unwrap();
 
-        assert!(msg.contains("Claude Code"), "message should contain target name: {msg}");
+        assert!(
+            msg.contains("Claude Code"),
+            "message should contain target name: {msg}"
+        );
         assert!(
             msg.contains(&config_path.display().to_string()),
             "message should contain config path: {msg}"
@@ -633,8 +635,7 @@ mod tests {
     fn test_resolve_config_path_cursor() {
         let path = resolve_config_path(&InstallTarget::Cursor).unwrap();
         assert!(
-            path.ends_with(".cursor/mcp.json")
-                || path.ends_with(".cursor\\mcp.json"),
+            path.ends_with(".cursor/mcp.json") || path.ends_with(".cursor\\mcp.json"),
             "expected path ending with .cursor/mcp.json, got: {}",
             path.display()
         );
@@ -644,8 +645,7 @@ mod tests {
     fn test_resolve_config_path_gemini_cli() {
         let path = resolve_config_path(&InstallTarget::GeminiCli).unwrap();
         assert!(
-            path.ends_with(".gemini/settings.json")
-                || path.ends_with(".gemini\\settings.json"),
+            path.ends_with(".gemini/settings.json") || path.ends_with(".gemini\\settings.json"),
             "expected path ending with .gemini/settings.json, got: {}",
             path.display()
         );
@@ -655,8 +655,7 @@ mod tests {
     fn test_resolve_config_path_codex() {
         let path = resolve_config_path(&InstallTarget::Codex).unwrap();
         assert!(
-            path.ends_with(".codex/config.toml")
-                || path.ends_with(".codex\\config.toml"),
+            path.ends_with(".codex/config.toml") || path.ends_with(".codex\\config.toml"),
             "expected path ending with .codex/config.toml, got: {}",
             path.display()
         );
@@ -666,8 +665,7 @@ mod tests {
     fn test_resolve_config_path_vscode() {
         let path = resolve_config_path(&InstallTarget::Vscode).unwrap();
         assert!(
-            path.ends_with(".vscode/mcp.json")
-                || path.ends_with(".vscode\\mcp.json"),
+            path.ends_with(".vscode/mcp.json") || path.ends_with(".vscode\\mcp.json"),
             "expected path ending with .vscode/mcp.json, got: {}",
             path.display()
         );

@@ -1,6 +1,8 @@
 use clap::Parser;
 use mcp_for_azure_devops_boards::azure::client::AzureDevOpsClient;
-use mcp_for_azure_devops_boards::install::{InstallError, InstallTarget, install, resolve_config_path};
+use mcp_for_azure_devops_boards::install::{
+    InstallError, InstallTarget, install, resolve_config_path,
+};
 use mcp_for_azure_devops_boards::mcp::server::AzureMcpServer;
 use mcp_for_azure_devops_boards::server::http;
 use rmcp::ServiceExt;
@@ -28,8 +30,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     if let Some(target) = &args.install {
-        let binary_path = std::env::current_exe()
-            .map_err(|e| InstallError::BinaryPathDetection { source: e })?;
+        let binary_path =
+            std::env::current_exe().map_err(|e| InstallError::BinaryPathDetection { source: e })?;
         let config_path = resolve_config_path(target)?;
         let message = install(target, &config_path, &binary_path)?;
         println!("{message}");
@@ -89,10 +91,7 @@ mod tests {
     fn test_install_flag_parsing() {
         let args = Args::try_parse_from(["test", "--install", "claude-code"]).unwrap();
         assert!(args.install.is_some());
-        assert!(matches!(
-            args.install.unwrap(),
-            InstallTarget::ClaudeCode
-        ));
+        assert!(matches!(args.install.unwrap(), InstallTarget::ClaudeCode));
     }
 
     #[test]
@@ -112,11 +111,13 @@ mod tests {
             "gemini-cli",
         ];
         for target in targets {
-            let args =
-                Args::try_parse_from(["test", "--install", target]).unwrap_or_else(|e| {
-                    panic!("failed to parse --install {target}: {e}");
-                });
-            assert!(args.install.is_some(), "install should be Some for {target}");
+            let args = Args::try_parse_from(["test", "--install", target]).unwrap_or_else(|e| {
+                panic!("failed to parse --install {target}: {e}");
+            });
+            assert!(
+                args.install.is_some(),
+                "install should be Some for {target}"
+            );
         }
     }
 }
