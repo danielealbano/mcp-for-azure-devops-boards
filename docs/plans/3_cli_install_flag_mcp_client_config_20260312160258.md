@@ -12,16 +12,16 @@ Allow users to register the MCP server with their preferred AI client via a sing
 
 ### Acceptance Criteria
 
-- [ ] `--install <target>` flag added (targets: `claude-code`, `claude-desktop`, `cursor`, `vscode`, `codex`, `gemini-cli`)
-- [ ] Detects binary path via `std::env::current_exe()`
-- [ ] Resolves config file path per target and platform
-- [ ] Creates/updates config file with correct format per target
-- [ ] Mutually exclusive with `--server`
-- [ ] Preserves existing config file content (other keys, other server entries)
-- [ ] Updates existing server entry if already present (path changed)
-- [ ] Creates parent directories if they don't exist
-- [ ] Prints success message with config file path and exits
-- [ ] Unit tests for all targets and edge cases
+- [x] `--install <target>` flag added (targets: `claude-code`, `claude-desktop`, `cursor`, `vscode`, `codex`, `gemini-cli`)
+- [x] Detects binary path via `std::env::current_exe()`
+- [x] Resolves config file path per target and platform
+- [x] Creates/updates config file with correct format per target
+- [x] Mutually exclusive with `--server`
+- [x] Preserves existing config file content (other keys, other server entries)
+- [x] Updates existing server entry if already present (path changed)
+- [x] Creates parent directories if they don't exist
+- [x] Prints success message with config file path and exits
+- [x] Unit tests for all targets and edge cases
 
 ---
 
@@ -44,8 +44,8 @@ tempfile = "3"
 
 **Definition of Done**:
 
-- [ ] `dirs`, `toml` added to `[dependencies]`
-- [ ] `tempfile` added to `[dev-dependencies]`
+- [x] `dirs`, `toml` added to `[dependencies]`
+- [x] `tempfile` added to `[dev-dependencies]`
 
 ---
 
@@ -176,15 +176,15 @@ command = "/path/to/mcp-for-azure-devops-boards"
 
 **Definition of Done**:
 
-- [ ] Module compiles without warnings
-- [ ] All 6 targets supported with correct format
-- [ ] JSON targets use correct key (`mcpServers` vs `servers`)
-- [ ] VS Code entries include `"type": "stdio"`
-- [ ] Codex uses TOML format
-- [ ] Parent directories created when needed
-- [ ] Existing config content preserved
-- [ ] Existing server entry updated on re-install
-- [ ] Error variants cover all failure modes (including `InvalidConfigFormat` for non-Object JSON root)
+- [x] Module compiles without warnings
+- [x] All 6 targets supported with correct format
+- [x] JSON targets use correct key (`mcpServers` vs `servers`)
+- [x] VS Code entries include `"type": "stdio"`
+- [x] Codex uses TOML format
+- [x] Parent directories created when needed
+- [x] Existing config content preserved
+- [x] Existing server entry updated on re-install
+- [x] Error variants cover all failure modes (including `InvalidConfigFormat` for non-Object JSON root)
 
 ---
 
@@ -194,7 +194,7 @@ command = "/path/to/mcp-for-azure-devops-boards"
 
 **Definition of Done**:
 
-- [ ] Module accessible from `main.rs` and integration tests
+- [x] Module accessible from `main.rs` and integration tests
 
 ---
 
@@ -231,10 +231,10 @@ if let Some(target) = &args.install {
 
 **Definition of Done**:
 
-- [ ] `--install <target>` flag accepted by CLI
-- [ ] Conflicts with `--server` (clap error if both provided)
-- [ ] Process exits after successful install with message
-- [ ] Error propagated correctly on failure
+- [x] `--install <target>` flag accepted by CLI
+- [x] Conflicts with `--server` (clap error if both provided)
+- [x] Process exits after successful install with message
+- [x] Error propagated correctly on failure
 
 ---
 
@@ -282,9 +282,9 @@ if let Some(target) = &args.install {
 
 **Definition of Done**:
 
-- [ ] All 6 targets have config creation tests
-- [ ] Edge cases covered (existing config, re-install, directory creation, malformed input, empty files)
-- [ ] Path resolution tested for all targets (suffix assertions)
+- [x] All 6 targets have config creation tests
+- [x] Edge cases covered (existing config, re-install, directory creation, malformed input, empty files)
+- [x] Path resolution tested for all targets (suffix assertions)
 
 ---
 
