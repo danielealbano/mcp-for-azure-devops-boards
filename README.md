@@ -102,19 +102,114 @@ path/to/mcp-for-azure-devops-boards --server --port 3000
 
 *Note: Make sure you have run `az login` in your terminal so the process can pick up the credentials.*
 
-#### Claude Desktop
+#### Quick setup with `--install`
 
-Add the following to your `claude_desktop_config.json`:
+The fastest way to register the MCP server with your preferred client:
+
+```bash
+mcp-for-azure-devops-boards --install <target>
+```
+
+Valid targets: `claude-code`, `claude-desktop`, `cursor`, `vscode`, `codex`, `gemini-cli`.
+
+The command auto-detects the binary path, resolves the correct config file location, and writes the entry in the expected format. Existing configuration is preserved.
+
+#### Manual configuration
+
+##### Claude Code
+
+Config file: `~/.claude.json`
 
 ```json
 {
   "mcpServers": {
-    "azure-devops-boards": {
-      "command": "path/to/mcp-for-azure-devops-boards"
+    "mcp-for-azure-devops-boards": {
+      "command": "/opt/homebrew/bin/mcp-for-azure-devops-boards"
     }
   }
 }
 ```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
+
+##### Claude Desktop
+
+Config file locations:
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "mcp-for-azure-devops-boards": {
+      "command": "/opt/homebrew/bin/mcp-for-azure-devops-boards"
+    }
+  }
+}
+```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
+
+##### Cursor
+
+Config file: `~/.cursor/mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "mcp-for-azure-devops-boards": {
+      "command": "/opt/homebrew/bin/mcp-for-azure-devops-boards"
+    }
+  }
+}
+```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
+
+##### VS Code
+
+Config file: `.vscode/mcp.json` (workspace level)
+
+```json
+{
+  "servers": {
+    "mcp-for-azure-devops-boards": {
+      "type": "stdio",
+      "command": "/opt/homebrew/bin/mcp-for-azure-devops-boards"
+    }
+  }
+}
+```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
+
+##### gemini-cli
+
+Config file: `~/.gemini/settings.json`
+
+```json
+{
+  "mcpServers": {
+    "mcp-for-azure-devops-boards": {
+      "command": "/opt/homebrew/bin/mcp-for-azure-devops-boards"
+    }
+  }
+}
+```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
+
+##### Codex CLI
+
+Config file: `~/.codex/config.toml`
+
+```toml
+[mcp_servers.mcp-for-azure-devops-boards]
+command = "/opt/homebrew/bin/mcp-for-azure-devops-boards"
+```
+
+> **Windows (Scoop)**: Replace the command path with `%USERPROFILE%\\scoop\\apps\\mcp-for-azure-devops-boards\\current\\mcp-for-azure-devops-boards.exe`.
 
 ### Available Tools
 

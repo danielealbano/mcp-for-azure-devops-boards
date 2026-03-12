@@ -30,11 +30,17 @@ graph LR
 │   ├── test_tools_tags.rs
 │   ├── test_tools_work_item_types.rs
 │   ├── test_tools_classification_nodes.rs
-│   └── test_tools_work_items.rs
+│   ├── test_tools_work_items.rs
+│   ├── test_install_e2e.rs       # E2E testcontainers tests for install config format
+│   ├── docker/                   # Dockerfiles for E2E testcontainers tests
+│   │   ├── claude-code/Dockerfile
+│   │   ├── cursor/Dockerfile
+│   │   └── gemini-cli/Dockerfile
 ├── src/
-│   ├── main.rs                   # CLI entry (clap), transport selection
+│   ├── main.rs                   # CLI entry (clap), transport selection, --install
 │   ├── lib.rs                    # Library root: re-exports modules
 │   ├── compact_llm.rs            # Compact JSON serializer for LLM output
+│   ├── install.rs                # CLI --install: config generation for MCP clients
 │   ├── azure/                    # Azure DevOps API client layer
 │   │   ├── mod.rs
 │   │   ├── client.rs             # AzureDevOpsClient, AzureError, auth, HTTP helpers
