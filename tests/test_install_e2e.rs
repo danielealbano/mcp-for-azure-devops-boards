@@ -45,13 +45,15 @@ async fn run_e2e_install_test(
         .await
         .unwrap_or_else(|e| panic!("Failed to write config into container: {e}"));
 
-    let result = container
+    let mut result = container
         .exec(ExecCommand::new(verify_command.clone()))
         .await
         .unwrap_or_else(|e| panic!("Failed to exec verify command: {e}"));
 
-    let stdout = String::from_utf8_lossy(&result.stdout_to_vec().await.unwrap_or_default());
-    let stderr = String::from_utf8_lossy(&result.stderr_to_vec().await.unwrap_or_default());
+    let stdout_bytes = result.stdout_to_vec().await.unwrap_or_default();
+    let stderr_bytes = result.stderr_to_vec().await.unwrap_or_default();
+    let stdout = String::from_utf8_lossy(&stdout_bytes);
+    let stderr = String::from_utf8_lossy(&stderr_bytes);
     let combined = format!("{stdout}{stderr}");
 
     assert!(
@@ -67,11 +69,7 @@ async fn test_e2e_claude_code_recognizes_config() {
         "mcp-test-claude-code",
         InstallTarget::ClaudeCode,
         "/root/.claude.json",
-        vec![
-            "claude".to_string(),
-            "mcp".to_string(),
-            "list".to_string(),
-        ],
+        vec!["claude".to_string(), "mcp".to_string(), "list".to_string()],
     )
     .await;
 }
@@ -83,11 +81,7 @@ async fn test_e2e_cursor_recognizes_config() {
         "mcp-test-cursor",
         InstallTarget::Cursor,
         "/root/.cursor/mcp.json",
-        vec![
-            "agent".to_string(),
-            "mcp".to_string(),
-            "list".to_string(),
-        ],
+        vec!["agent".to_string(), "mcp".to_string(), "list".to_string()],
     )
     .await;
 }
@@ -99,11 +93,7 @@ async fn test_e2e_gemini_cli_recognizes_config() {
         "mcp-test-gemini-cli",
         InstallTarget::GeminiCli,
         "/root/.gemini/settings.json",
-        vec![
-            "gemini".to_string(),
-            "mcp".to_string(),
-            "list".to_string(),
-        ],
+        vec!["gemini".to_string(), "mcp".to_string(), "list".to_string()],
     )
     .await;
 }

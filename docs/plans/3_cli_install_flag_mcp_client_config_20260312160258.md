@@ -518,51 +518,51 @@ Verify the entire implementation end-to-end to ensure all quality gates pass and
 
 ### Acceptance Criteria
 
-- [ ] All quality gates pass (`make fmt`, `make lint`, `make test`, `make build`)
-- [ ] All install targets produce correct output
-- [ ] E2E Docker images build and tests pass
-- [ ] Documentation updated and accurate
-- [ ] No code quality issues
+- [x] All quality gates pass (`make fmt`, `make lint`, `make test`, `make build`)
+- [x] All install targets produce correct output
+- [x] E2E Docker images build and tests pass
+- [x] Documentation updated and accurate
+- [x] No code quality issues
 
 ### Task 4.1: End-to-end verification of entire implementation
 
 #### Build and quality gates
 
-- [ ] `make fmt` passes (no formatting issues)
-- [ ] `make lint` passes (no clippy warnings)
-- [ ] `make test` passes (all unit + integration tests)
-- [ ] `make build` passes (no build warnings)
+- [x] `make fmt` passes (no formatting issues)
+- [x] `make lint` passes (no clippy warnings)
+- [x] `make test` passes (all unit + integration tests)
+- [x] `make build` passes (no build warnings)
 
 #### Install flag behavior
 
-- [ ] `--install claude-code` produces correct JSON at `~/.claude.json` with `mcpServers` key
-- [ ] `--install claude-desktop` produces correct JSON at `<config_dir>/Claude/claude_desktop_config.json` with `mcpServers` key
-- [ ] `--install cursor` produces correct JSON at `~/.cursor/mcp.json` with `mcpServers` key
-- [ ] `--install vscode` produces correct JSON at `.vscode/mcp.json` with `servers` key and `"type": "stdio"`
-- [ ] `--install gemini-cli` produces correct JSON at `~/.gemini/settings.json` with `mcpServers` key
-- [ ] `--install codex` produces correct TOML at `~/.codex/config.toml` with `[mcp_servers.mcp-for-azure-devops-boards]`
-- [ ] `--install` and `--server` together are rejected by clap
-- [ ] `--install` with invalid target is rejected by clap
-- [ ] Existing config file content is preserved after install
-- [ ] Re-running install updates the binary path
-- [ ] Parent directories are created if missing
+- [x] `--install claude-code` produces correct JSON at `~/.claude.json` with `mcpServers` key
+- [x] `--install claude-desktop` produces correct JSON at `<config_dir>/Claude/claude_desktop_config.json` with `mcpServers` key
+- [x] `--install cursor` produces correct JSON at `~/.cursor/mcp.json` with `mcpServers` key
+- [x] `--install vscode` produces correct JSON at `.vscode/mcp.json` with `servers` key and `"type": "stdio"`
+- [x] `--install gemini-cli` produces correct JSON at `~/.gemini/settings.json` with `mcpServers` key
+- [x] `--install codex` produces correct TOML at `~/.codex/config.toml` with `[mcp_servers.mcp-for-azure-devops-boards]`
+- [x] `--install` and `--server` together are rejected by clap
+- [x] `--install` with invalid target is rejected by clap
+- [x] Existing config file content is preserved after install
+- [x] Re-running install updates the binary path
+- [x] Parent directories are created if missing
 
 #### E2E tests
 
-- [ ] `make test-e2e-build` builds all 3 Docker images without errors
-- [ ] `make test-e2e` runs and all E2E tests pass
+- [x] `make test-e2e-build` builds all 3 Docker images without errors
+- [x] `make test-e2e` runs and all E2E tests pass
 
 #### Documentation
 
-- [ ] README MCP Configuration section covers all 6 targets with correct formats
-- [ ] README mentions `--install` flag
-- [ ] `docs/PROJECT.md` has updated dependencies and CLI flag tables
-- [ ] `docs/ARCHITECTURE.md` has `install.rs` and `tests/docker/` in project structure
+- [x] README MCP Configuration section covers all 6 targets with correct formats
+- [x] README mentions `--install` flag
+- [x] `docs/PROJECT.md` has updated dependencies and CLI flag tables
+- [x] `docs/ARCHITECTURE.md` has `install.rs` and `tests/docker/` in project structure
 
 #### Code quality
 
-- [ ] No TODOs in code
-- [ ] No dead code or commented-out code
-- [ ] No temporary hacks
-- [ ] Error handling covers all failure modes
-- [ ] Success messages are clear and include the config file path
+- [x] No TODOs in code
+- [x] No dead code or commented-out code
+- [x] No temporary hacks
+- [x] Error handling covers all failure modes
+- [x] Success messages are clear and include the config file path
