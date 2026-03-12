@@ -15,6 +15,7 @@ async fn run_e2e_install_test(
     target: InstallTarget,
     config_path_in_container: &str,
     verify_command: Vec<String>,
+    env_vars: Vec<(&str, &str)>,
 ) {
     let tmp = tempfile::TempDir::new().unwrap();
     let config_path = tmp.path().join("config_file");
@@ -35,9 +36,13 @@ async fn run_e2e_install_test(
         "mkdir -p '{parent_dir}' && echo '{encoded}' | base64 -d > '{config_path_in_container}'"
     );
 
-    let container = GenericImage::new(image_name, "latest")
+    let mut image = GenericImage::new(image_name, "latest")
         .with_wait_for(WaitFor::seconds(2))
-        .with_cmd(vec!["sleep", "infinity"])
+        .with_cmd(vec!["sleep", "infinity"]);
+    for (key, val) in &env_vars {
+        image = image.with_env_var(*key, *val);
+    }
+    let container = image
         .start()
         .await
         .unwrap_or_else(|e| panic!("Failed to start container {image_name}: {e}"));
@@ -71,6 +76,7 @@ async fn test_e2e_claude_code_recognizes_config() {
         InstallTarget::ClaudeCode,
         "/root/.claude.json",
         vec!["claude".to_string(), "mcp".to_string(), "list".to_string()],
+        vec![],
     )
     .await;
 }
@@ -82,6 +88,7 @@ async fn test_e2e_cursor_recognizes_config() {
         InstallTarget::Cursor,
         "/root/.cursor/mcp.json",
         vec!["agent".to_string(), "mcp".to_string(), "list".to_string()],
+        vec![],
     )
     .await;
 }
@@ -93,6 +100,7 @@ async fn test_e2e_gemini_cli_recognizes_config() {
         InstallTarget::GeminiCli,
         "/root/.gemini/settings.json",
         vec!["gemini".to_string(), "mcp".to_string(), "list".to_string()],
+        vec![("GOOGLE_GENAI_USE_GCA", "true")],
     )
     .await;
 }
