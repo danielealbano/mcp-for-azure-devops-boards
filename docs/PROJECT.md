@@ -44,12 +44,16 @@ Cargo workspace with two members:
 | `base64` | 0.22 | Base64 encoding |
 | `urlencoding` | 2.1 | URL encoding |
 | `dotenv` | 0.15 | `.env` file loading |
+| `dirs` | 6 | Cross-platform home/config directory resolution |
+| `toml` | 0.8 | TOML serialization / deserialization (Codex CLI config) |
 
 ### Dev
 
 | Crate | Version | Purpose |
 |---|---|---|
 | `mockall` | 0.12 (optional, via `test-support` feature) | Trait-based test mocking for `MockAzureDevOpsApi`; required for integration tests |
+| `tempfile` | 3 | Temporary files and directories for unit tests |
+| `testcontainers` | 0.27 | Docker-based E2E tests for install config verification |
 
 ### Codegen Crate (`mcp-tools-codegen`)
 
@@ -67,6 +71,7 @@ All configuration via CLI flags (clap):
 |---|---|---|
 | `--server` | false | Run in HTTP server mode (default: stdio) |
 | `--port` | 3000 | HTTP server port (only with `--server`) |
+| `--install` | — | Install MCP server configuration for the specified client (claude-code, claude-desktop, cursor, vscode, codex, gemini-cli) |
 
 Environment variables:
 - `RUST_LOG` — controls log level (e.g. `RUST_LOG=debug`)

@@ -428,11 +428,11 @@ Provide clear configuration examples for all supported MCP clients so users can 
 
 ### Acceptance Criteria
 
-- [ ] README MCP Configuration section restructured with all 6 targets
-- [ ] macOS (Homebrew) and Windows (Scoop) binary paths shown
-- [ ] `--install` flag documented as quick setup alternative
-- [ ] `docs/PROJECT.md` updated with new dependencies and `--install` flag
-- [ ] `docs/ARCHITECTURE.md` updated with `src/install.rs`
+- [x] README MCP Configuration section restructured with all 6 targets
+- [x] macOS (Homebrew) and Windows (Scoop) binary paths shown
+- [x] `--install` flag documented as quick setup alternative
+- [x] `docs/PROJECT.md` updated with new dependencies and `--install` flag
+- [x] `docs/ARCHITECTURE.md` updated with `src/install.rs`
 
 ---
 
@@ -456,10 +456,10 @@ Each manual config entry: one JSON/TOML code block with the macOS/Linux path, an
 
 **Definition of Done**:
 
-- [ ] All 6 targets documented
-- [ ] Both macOS (Homebrew) and Windows (Scoop) paths referenced
-- [ ] `--install` flag documented
-- [ ] Section is concise
+- [x] All 6 targets documented
+- [x] Both macOS (Homebrew) and Windows (Scoop) paths referenced
+- [x] `--install` flag documented
+- [x] Section is concise
 
 ---
 
@@ -477,9 +477,9 @@ Each manual config entry: one JSON/TOML code block with the macOS/Linux path, an
 
 **Definition of Done**:
 
-- [ ] Runtime dependencies table has `dirs` and `toml`
-- [ ] Dev dependencies table has `testcontainers` and `tempfile`
-- [ ] CLI flags table has `--install`
+- [x] Runtime dependencies table has `dirs` and `toml`
+- [x] Dev dependencies table has `testcontainers` and `tempfile`
+- [x] CLI flags table has `--install`
 
 ---
 
@@ -506,9 +506,9 @@ Each manual config entry: one JSON/TOML code block with the macOS/Linux path, an
 
 **Definition of Done**:
 
-- [ ] `install.rs` appears in project structure
-- [ ] `tests/docker/` appears in project structure
-- [ ] `main.rs` description updated
+- [x] `install.rs` appears in project structure
+- [x] `tests/docker/` appears in project structure
+- [x] `main.rs` description updated
 
 ---
 
