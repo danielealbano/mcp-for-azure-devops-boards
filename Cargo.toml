@@ -33,7 +33,7 @@ log = "0.4"
 env_logger = "0.10"
 rmcp = { version = "=2.1.0", features = ["schemars", "transport-streamable-http-server", "transport-io"] }
 rmcp-macros = "=2.1.0"
-schemars = "0.8"
+schemars = "1"
 base64 = "0.22"
 html2text = "0.16.4"
 csv = "1.4"
