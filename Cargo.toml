@@ -31,7 +31,7 @@ async-trait = "0.1"
 dotenv = "0.15"
 log = "0.4"
 env_logger = "0.10"
-rmcp = { version = "=0.8.5", features = ["schemars", "transport-streamable-http-server", "transport-io"] }
+rmcp = { version = "=1.4.0", features = ["schemars", "transport-streamable-http-server", "transport-io"] }
 rmcp-macros = "=0.8.5"
 schemars = "0.8"
 base64 = "0.22"
