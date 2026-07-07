@@ -18,22 +18,18 @@ pub struct AzureMcpServer {
 // and generates the impl block in target/debug/build/.../out/generated_tools.rs
 include!(concat!(env!("OUT_DIR"), "/generated_tools.rs"));
 
-#[tool_handler]
+#[tool_handler(router = self.tool_router)]
 impl rmcp::ServerHandler for AzureMcpServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo {
-            server_info: Implementation {
-                name: env!("CARGO_PKG_NAME").into(),
-                version: env!("CARGO_PKG_VERSION").into(),
-                icons: None,
-                title: None,
-                website_url: Some(env!("CARGO_PKG_HOMEPAGE").into()),
-            },
-            instructions: Some(
-                "Use this tool to interact with Azure DevOps Boards and Work Items".into(),
-            ),
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            ..Default::default()
-        }
+        // ServerInfo (InitializeResult) and Implementation are #[non_exhaustive]
+        // in rmcp 2.x, so they cannot be built with a struct literal. Start from
+        // Default and set the fields we care about.
+        let mut info = ServerInfo::default();
+        info.server_info = Implementation::new(env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+            .with_website_url(env!("CARGO_PKG_HOMEPAGE"));
+        info.instructions =
+            Some("Use this tool to interact with Azure DevOps Boards and Work Items".into());
+        info.capabilities = ServerCapabilities::builder().enable_tools().build();
+        info
     }
 }
