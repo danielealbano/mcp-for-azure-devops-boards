@@ -26,7 +26,7 @@ The language rules live in `rust.md` (Rust language, idioms, error handling, tes
 
 ## Repository Status — Public / Open Source
 
-This is a **PUBLIC, open-source repository** — Rust MCP server, **MIT-licensed**, hosted on **GitHub** (`github.com/danielealbano/azure-devops-boards-mcp-rust`; crate metadata declares `mcp-for-azure-devops-boards`). CI and releases run on **GitHub Actions / GitHub Releases**.
+This is a **PUBLIC, open-source repository** — Rust MCP server, **MIT-licensed**, hosted on **GitHub** at `github.com/danielealbano/mcp-for-azure-devops-boards` (matching the crate name; the older `azure-devops-boards-mcp-rust` URL redirects here). CI and releases run on **GitHub Actions / GitHub Releases**.
 
 - The project is distributed publicly; keep code, docs, and configuration consistent with an open-source, MIT-licensed posture.
 - Do NOT introduce private/internal or proprietary framing.
