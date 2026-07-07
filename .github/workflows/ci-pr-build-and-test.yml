@@ -24,6 +24,9 @@ jobs:
           - os-name: Linux-x86_64
             runs-on: ubuntu-latest
 
+          - os-name: Linux-aarch64
+            runs-on: ubuntu-24.04-arm
+
           - os-name: macOS-aarch64
             runs-on: macos-14
 
