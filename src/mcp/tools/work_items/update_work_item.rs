@@ -22,7 +22,7 @@ pub struct UpdateWorkItemArgs {
     /// Work item ID to update
     pub id: u32,
 
-    /// Format for large text fields (description, acceptance criteria, repro steps): "markdown" or "html" (default: "markdown")
+    /// Format for large text fields (description, acceptance criteria, repro steps, justification): "markdown" or "html" (default: "markdown")
     #[serde(default = "default_text_format")]
     pub format: String,
 
@@ -102,6 +102,10 @@ pub struct UpdateWorkItemArgs {
     #[serde(default)]
     pub repro_steps: Option<String>,
 
+    /// Justification (CMMI process template; use markdown syntax when format is "markdown", HTML tags when format is "html")
+    #[serde(default)]
+    pub justification: Option<String>,
+
     /// Optional extra fields as JSON string (for custom fields)
     #[serde(default)]
     pub fields: Option<String>,
@@ -144,6 +148,12 @@ pub async fn update_work_item(
         if args.repro_steps.is_some() {
             multiline_formats.push((
                 "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                "Markdown".to_string(),
+            ));
+        }
+        if args.justification.is_some() {
+            multiline_formats.push((
+                "Microsoft.VSTS.CMMI.Justification".to_string(),
                 "Markdown".to_string(),
             ));
         }
@@ -246,6 +256,12 @@ pub async fn update_work_item(
         field_map.insert(
             "Microsoft.VSTS.TCM.ReproSteps".to_string(),
             serde_json::json!(repro_steps),
+        );
+    }
+    if let Some(justification) = &args.justification {
+        field_map.insert(
+            "Microsoft.VSTS.CMMI.Justification".to_string(),
+            serde_json::json!(justification),
         );
     }
 
@@ -381,7 +397,7 @@ mod tests {
     #[test]
     fn test_update_work_item_multiline_formats_built_for_markdown() {
         let args = deserialize_args(
-            r#"{"organization":"org","project":"proj","id":1,"description":"desc","acceptance_criteria":"ac","repro_steps":"steps"}"#,
+            r#"{"organization":"org","project":"proj","id":1,"description":"desc","acceptance_criteria":"ac","repro_steps":"steps","justification":"why"}"#,
         )
         .unwrap();
 
@@ -403,9 +419,15 @@ mod tests {
                     "Markdown".to_string(),
                 ));
             }
+            if args.justification.is_some() {
+                multiline_formats.push((
+                    "Microsoft.VSTS.CMMI.Justification".to_string(),
+                    "Markdown".to_string(),
+                ));
+            }
         }
 
-        assert_eq!(multiline_formats.len(), 3);
+        assert_eq!(multiline_formats.len(), 4);
         assert_eq!(
             multiline_formats[0],
             ("System.Description".to_string(), "Markdown".to_string())
@@ -424,12 +446,19 @@ mod tests {
                 "Markdown".to_string()
             )
         );
+        assert_eq!(
+            multiline_formats[3],
+            (
+                "Microsoft.VSTS.CMMI.Justification".to_string(),
+                "Markdown".to_string()
+            )
+        );
     }
 
     #[test]
     fn test_update_work_item_multiline_formats_empty_for_html() {
         let args = deserialize_args(
-            r#"{"organization":"org","project":"proj","id":1,"format":"html","description":"desc","acceptance_criteria":"ac","repro_steps":"steps"}"#,
+            r#"{"organization":"org","project":"proj","id":1,"format":"html","description":"desc","acceptance_criteria":"ac","repro_steps":"steps","justification":"why"}"#,
         )
         .unwrap();
 
@@ -448,6 +477,12 @@ mod tests {
             if args.repro_steps.is_some() {
                 multiline_formats.push((
                     "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                    "Markdown".to_string(),
+                ));
+            }
+            if args.justification.is_some() {
+                multiline_formats.push((
+                    "Microsoft.VSTS.CMMI.Justification".to_string(),
                     "Markdown".to_string(),
                 ));
             }
@@ -478,6 +513,12 @@ mod tests {
             if args.repro_steps.is_some() {
                 multiline_formats.push((
                     "Microsoft.VSTS.TCM.ReproSteps".to_string(),
+                    "Markdown".to_string(),
+                ));
+            }
+            if args.justification.is_some() {
+                multiline_formats.push((
+                    "Microsoft.VSTS.CMMI.Justification".to_string(),
                     "Markdown".to_string(),
                 ));
             }

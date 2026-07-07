@@ -107,6 +107,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
@@ -147,6 +148,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
@@ -357,6 +359,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
@@ -397,6 +400,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
@@ -708,6 +712,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
@@ -753,6 +758,7 @@ mod tests {
                 target_date: None,
                 acceptance_criteria: None,
                 repro_steps: None,
+                justification: None,
                 fields: None,
             },
         )
