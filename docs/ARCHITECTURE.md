@@ -110,7 +110,7 @@ graph TD
     end
 
     subgraph "External"
-        AUTH["azure_identity<br/>DefaultAzureCredential"]
+        AUTH["azure_identity<br/>credential chain"]
         AZDO["Azure DevOps REST API v7.1"]
     end
 
@@ -144,7 +144,7 @@ sequenceDiagram
     Router->>Tool: Deserialize args, invoke
     Tool->>API: Call API function
     API->>Client: HTTP request builder
-    Client->>Client: get_token() via DefaultAzureCredential
+    Client->>Client: get_token() via credential chain
     Client->>AzDO: HTTP request (Bearer token)
     AzDO-->>Client: JSON response
     Client-->>API: Deserialized response
@@ -190,7 +190,7 @@ sequenceDiagram
 classDiagram
     class AzureDevOpsClient {
         -Client client
-        -Arc~DefaultAzureCredential~ credential
+        -Vec~Arc~TokenCredential~~ credentials
         +new() Self
         +get(org, project, path) Result~T~
         +post(org, project, path, body) Result~T~
@@ -248,5 +248,5 @@ graph LR
 
 - `AzureMcpServer` is `Clone` (wraps `Arc<dyn AzureDevOpsApi>`)
 - Each HTTP connection gets a clone of `AzureMcpServer`
-- `AzureDevOpsClient` contains `reqwest::Client` (internally Arc'd, connection-pooled) and `Arc<DefaultAzureCredential>`
+- `AzureDevOpsClient` contains `reqwest::Client` (internally Arc'd, connection-pooled) and an ordered credential chain (`Vec<Arc<dyn TokenCredential>>`)
 - Bearer tokens are fetched per-request (credential SDK handles caching)

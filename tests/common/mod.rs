@@ -14,7 +14,6 @@ pub fn assert_tool_output_has_warning(result: &CallToolResult) {
 pub fn extract_text_from_result(result: &CallToolResult) -> String {
     let content = &result.content[0];
     content
-        .raw
         .as_text()
         .expect("Content should be a text variant")
         .text

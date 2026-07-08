@@ -55,7 +55,7 @@ Tool registration uses a two-phase code-generation approach — do NOT bypass it
 
 ## 6) Azure DevOps API Integration — ABSOLUTE RULES
 
-- `AzureDevOpsClient` (`src/azure/client.rs`) holds a `reqwest::Client` and `Arc<DefaultAzureCredential>`; Bearer tokens are fetched per-request via `get_token()`.
+- `AzureDevOpsClient` (`src/azure/client.rs`) holds a `reqwest::Client` and an ordered credential chain (`Vec<Arc<dyn TokenCredential>>`, managed identity → Azure CLI → Azure Developer CLI); Bearer tokens are fetched per-request via `get_token()`.
 - API modules (`boards.rs`, `work_items.rs`, etc.) are standalone functions taking `&AzureDevOpsClient` as the first parameter, invoked through the HTTP helpers (`get`, `post`, `patch`, `org_request`, `team_request`, `vssps_request`).
 - Base URL: `https://dev.azure.com/{organization}/{project}/_apis/`; VSSPS: `https://app.vssps.visualstudio.com/_apis/`.
 - API version **7.1** (Comments API `7.2-preview.4`). Auth scope: `499b84ac-1321-427f-aa17-267ca6975798`.
