@@ -19,7 +19,7 @@ The language rules live in `rust.md` (Rust language, idioms, error handling, tes
 
 - It exposes **24 MCP tools** across 8 categories (organizations, projects, tags, work item types, classification nodes, teams, boards, work items), all named with the **`azdo_`** prefix.
 - It runs over **two transports**: **stdio** (default) and **streamable HTTP** (`--server`, binds `0.0.0.0:<port>`).
-- It authenticates to the Azure DevOps REST API (v7.1) via **`DefaultAzureCredential`** — Bearer tokens fetched per-request, never persisted, never logged.
+- It authenticates to the Azure DevOps REST API (v7.1) via an **Azure credential chain** (managed identity → Azure CLI → Azure Developer CLI) — Bearer tokens fetched per-request, never persisted, never logged.
 - It can self-register into MCP clients via the **`--install`** flag (claude-code, claude-desktop, cursor, vscode, codex, gemini-cli).
 
 ---
@@ -30,7 +30,7 @@ This is a **PUBLIC, open-source repository** — Rust MCP server, **MIT-licensed
 
 - The project is distributed publicly; keep code, docs, and configuration consistent with an open-source, MIT-licensed posture.
 - Do NOT introduce private/internal or proprietary framing.
-- Do NOT hardcode organization-specific identifiers, credentials, endpoints, or secrets — all Azure context is resolved at runtime from CLI flags and `DefaultAzureCredential`.
+- Do NOT hardcode organization-specific identifiers, credentials, endpoints, or secrets — all Azure context is resolved at runtime from CLI flags and the Azure credential chain.
 
 ---
 
@@ -78,8 +78,8 @@ This repository is hosted on **GitHub**. PR and repo operations use the **GitHub
 These come from `docs/PROJECT.md` and `docs/ARCHITECTURE.md`. They MUST NOT be relaxed without explicit user direction.
 
 - **Anti-prompt-injection — ABSOLUTE**: EVERY MCP tool MUST build its success `CallToolResult` via `tool_text_success()` (from `src/mcp/tools/support/`), which prepends the `UNTRUSTED_CONTENT_WARNING`. Using `CallToolResult::success(vec![Content::text(...)])` directly in tool files is FORBIDDEN. The warning MUST NEVER be removed, weakened, or shortened. (See `mcp.md`.)
-- **No secrets, ever**: NEVER hardcode secrets, tokens, or passwords. Azure Bearer tokens are fetched per-request via `DefaultAzureCredential`, never persisted, and **NEVER logged at any level** (trace included). No secrets in code, docs, config, or logs.
-- **Auth via `DefaultAzureCredential`**: credentials are resolved automatically (environment variables, managed identity, Azure CLI, etc.) with scope `499b84ac-1321-427f-aa17-267ca6975798`. Do NOT introduce alternative hardcoded credential paths.
+- **No secrets, ever**: NEVER hardcode secrets, tokens, or passwords. Azure Bearer tokens are fetched per-request via the Azure credential chain, never persisted, and **NEVER logged at any level** (trace included). No secrets in code, docs, config, or logs.
+- **Auth via an Azure credential chain**: credentials are resolved by trying, in order, managed identity (production / Azure-hosted), the Azure CLI, and the Azure Developer CLI (local development), with scope `499b84ac-1321-427f-aa17-267ca6975798`. Do NOT introduce alternative hardcoded credential paths.
 - **API surface**: Azure DevOps REST API **v7.1** (Comments API `7.2-preview.4`); base URL `https://dev.azure.com/{organization}/{project}/_apis/`, VSSPS `https://app.vssps.visualstudio.com/_apis/`. Work-item fetching is batched (200 per batch, 1000 max).
 - **Tool naming**: all MCP tools are prefixed **`azdo_`**. Keep names consistent with `docs/ARCHITECTURE.md` (MCP Tools table).
 - **Transports**: stdio (default) and streamable HTTP (`--server`). HTTP binds `0.0.0.0:<port>` — deployment MUST be behind appropriate network controls. Do NOT change binding defaults without user direction.
@@ -99,7 +99,7 @@ These come from `docs/PROJECT.md` and `docs/ARCHITECTURE.md`. They MUST NOT be r
 | `--port` | 3000 | HTTP server port (only with `--server`) |
 | `--install <client>` | — | Install MCP server configuration for a client (claude-code, claude-desktop, cursor, vscode, codex, gemini-cli) |
 
-- Azure credentials are resolved via `DefaultAzureCredential` — never hardcoded.
+- Azure credentials are resolved via the Azure credential chain — never hardcoded.
 - Logging is controlled via `RUST_LOG` (e.g. `RUST_LOG=debug`).
 - NEVER hardcode secrets; NEVER log tokens.
 
