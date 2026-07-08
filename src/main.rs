@@ -25,10 +25,30 @@ pub(crate) struct Args {
 
     /// Allowed `Host` header value for the HTTP server (repeatable; only valid
     /// with --server). When omitted, only loopback hosts (localhost, 127.0.0.1,
-    /// ::1) are accepted, which prevents DNS rebinding attacks. Provide your
-    /// deployment hostname(s) to serve behind a proxy or on a public interface.
-    #[arg(long = "allowed-host", value_name = "HOST", requires = "server")]
+    /// ::1) are accepted, which prevents DNS rebinding attacks. Providing any
+    /// value REPLACES the loopback default entirely, so loopback hosts must be
+    /// listed explicitly if they still need to be served (e.g. --allowed-host
+    /// mcp.example.com --allowed-host 127.0.0.1:3000).
+    #[arg(
+        long = "allowed-host",
+        value_name = "HOST",
+        requires = "server",
+        conflicts_with = "install",
+        value_parser = parse_allowed_host
+    )]
     allowed_hosts: Vec<String>,
+}
+
+/// Validates a single `--allowed-host` value. Rejects empty / whitespace-only
+/// input, which would otherwise replace the secure loopback default with an
+/// allow-list that matches no host and rejects every request. The trimmed value
+/// is returned so surrounding whitespace never reaches the allow-list.
+fn parse_allowed_host(value: &str) -> Result<String, String> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Err("allowed host must not be empty or whitespace-only".to_string());
+    }
+    Ok(trimmed.to_string())
 }
 
 #[tokio::main]
@@ -50,6 +70,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     if args.server {
         let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", args.port)).await?;
+        log::warn!(
+            "HTTP server binds 0.0.0.0 and is unauthenticated. Host-header validation guards \
+             against DNS rebinding but is NOT network access control; deploy behind a firewall \
+             or reverse proxy."
+        );
         log::info!("Starting web server on {}", listener.local_addr()?);
         http::run_server(mcp_server, listener, args.allowed_hosts).await?;
     } else {
@@ -129,11 +154,41 @@ mod tests {
 
     #[test]
     fn test_allowed_host_requires_server() {
-        let result = Args::try_parse_from(["test", "--allowed-host", "example.com"]);
-        assert!(
-            result.is_err(),
-            "--allowed-host without --server must be rejected"
+        let err = Args::try_parse_from(["test", "--allowed-host", "example.com"])
+            .expect_err("--allowed-host without --server must be rejected");
+        assert_eq!(
+            err.kind(),
+            clap::error::ErrorKind::MissingRequiredArgument,
+            "rejection must be due to the missing --server requirement"
         );
+        // The same value parses cleanly once --server is present.
+        Args::try_parse_from(["test", "--server", "--allowed-host", "example.com"])
+            .expect("--allowed-host with --server must parse");
+    }
+
+    #[test]
+    fn test_allowed_host_conflicts_with_install() {
+        // clap conflict rules take precedence over `requires`, so without an
+        // explicit conflict the flag would be silently accepted and ignored in
+        // install mode. Assert it is rejected instead.
+        let err = Args::try_parse_from(["test", "--install", "claude-code", "--allowed-host", "x"])
+            .expect_err("--allowed-host with --install must be rejected");
+        assert_eq!(
+            err.kind(),
+            clap::error::ErrorKind::ArgumentConflict,
+            "rejection must be due to the --install conflict"
+        );
+    }
+
+    #[test]
+    fn test_allowed_host_rejects_empty_value() {
+        for value in ["", "   "] {
+            let result = Args::try_parse_from(["test", "--server", "--allowed-host", value]);
+            assert!(
+                result.is_err(),
+                "empty/whitespace --allowed-host '{value}' must be rejected so the loopback default is not replaced by a match-nothing list"
+            );
+        }
     }
 
     #[test]

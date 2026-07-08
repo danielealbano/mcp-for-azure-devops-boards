@@ -136,15 +136,15 @@ mod tests {
         let client = reqwest::Client::new();
 
         // A request whose Host matches the configured allow-list passes
-        // DNS-rebinding validation and reaches MCP handling (not 403).
+        // DNS-rebinding validation and reaches MCP handling (a 2xx response,
+        // not the 403 that a rejected Host would produce).
         let allowed = initialize_request(&client, addr, "example.com")
             .send()
             .await
             .unwrap();
-        assert_ne!(
-            allowed.status().as_u16(),
-            403,
-            "configured Host 'example.com' must be accepted, got {}",
+        assert!(
+            allowed.status().is_success(),
+            "configured Host 'example.com' must be accepted and reach MCP handling (2xx), got {}",
             allowed.status()
         );
 
@@ -178,6 +178,55 @@ mod tests {
             403,
             "non-loopback Host must be rejected by the loopback-only default, got {}",
             rejected.status()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_allowed_hosts_multiple_entries_replace_default() {
+        // A multi-entry allow-list (including a host:port entry) fully replaces
+        // the loopback default: every configured host is accepted, an unlisted
+        // host is rejected, and loopback (no longer listed) is rejected too.
+        let addr = spawn_server(vec![
+            "a.example".to_string(),
+            "b.example".to_string(),
+            "mcp.internal:8443".to_string(),
+        ])
+        .await;
+        let client = reqwest::Client::new();
+
+        for host in ["a.example", "b.example", "mcp.internal:8443"] {
+            let response = initialize_request(&client, addr, host)
+                .send()
+                .await
+                .unwrap();
+            assert!(
+                response.status().is_success(),
+                "configured host '{host}' must be accepted, got {}",
+                response.status()
+            );
+        }
+
+        let unlisted = initialize_request(&client, addr, "attacker.example")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            unlisted.status().as_u16(),
+            403,
+            "unlisted host must be rejected with 403, got {}",
+            unlisted.status()
+        );
+
+        // The loopback default was replaced, so 127.0.0.1 is no longer allowed.
+        let loopback = initialize_request(&client, addr, "127.0.0.1")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            loopback.status().as_u16(),
+            403,
+            "loopback must be rejected once the allow-list replaces the default, got {}",
+            loopback.status()
         );
     }
 }
