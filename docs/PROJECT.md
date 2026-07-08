@@ -25,35 +25,34 @@ Cargo workspace with two members:
 
 | Crate | Version | Purpose |
 |---|---|---|
-| `rmcp` + `rmcp-macros` | 0.8.5 | MCP protocol: tool routing, server handler, transports (stdio, streamable HTTP) |
+| `rmcp` + `rmcp-macros` | 2.1.0 | MCP protocol: tool routing, server handler, transports (stdio, streamable HTTP) |
 | `clap` | 4 | CLI argument parsing (derive mode) |
 | `tokio` | 1 (full) | Async runtime |
-| `reqwest` | 0.11 | HTTP client for Azure DevOps REST API (json, multipart, native-tls) |
-| `azure_identity` | 0.17 | Azure authentication (`DefaultAzureCredential`) |
-| `azure_core` | 0.17 | Azure SDK core types (`TokenCredential`) |
+| `reqwest` | 0.13 | HTTP client for Azure DevOps REST API (json, multipart, native-tls) |
+| `azure_identity` | 1.0 | Azure authentication (credential chain: managed identity → Azure CLI → azd) |
+| `azure_core` | 1.0 | Azure SDK core types (`TokenCredential`) |
 | `serde` + `serde_json` | 1.0 | Serialization / deserialization |
-| `thiserror` | 1.0 | Typed error enums (`AzureError`) |
+| `thiserror` | 2 | Typed error enums (`AzureError`) |
 | `anyhow` | 1.0 | Application-level error handling |
 | `hyper` + `hyper-util` + `tower` | 1.x / 0.1.x / 0.5.x | HTTP server transport layer |
 | `async-trait` | 0.1 | Async methods in traits |
-| `log` + `env_logger` | 0.4 / 0.10 | Logging facade + env-based backend |
-| `schemars` | 0.8 | JSON Schema generation for MCP tool parameters |
-| `html2text` | 0.16.4 | HTML → plain text conversion (work item descriptions) |
+| `log` + `env_logger` | 0.4 / 0.11 | Logging facade + env-based backend |
+| `schemars` | 1 | JSON Schema generation for MCP tool parameters |
+| `html2text` | 0.17 | HTML → plain text conversion (work item descriptions) |
 | `csv` | 1.4 | CSV output for work item data |
 | `regex` + `once_cell` | 1.11 / 1.20 | Text normalization (compiled-once regex patterns) |
 | `base64` | 0.22 | Base64 encoding |
 | `urlencoding` | 2.1 | URL encoding |
-| `dotenv` | 0.15 | `.env` file loading |
 | `dirs` | 6 | Cross-platform home/config directory resolution |
-| `toml` | 0.8 | TOML serialization / deserialization (Codex CLI config) |
+| `toml` | 1 | TOML serialization / deserialization (Codex CLI config) |
 
 ### Dev
 
 | Crate | Version | Purpose |
 |---|---|---|
-| `mockall` | 0.12 (optional, via `test-support` feature) | Trait-based test mocking for `MockAzureDevOpsApi`; required for integration tests |
+| `mockall` | 0.15 (optional, via `test-support` feature) | Trait-based test mocking for `MockAzureDevOpsApi`; required for integration tests |
 | `tempfile` | 3 | Temporary files and directories for unit tests |
-| `testcontainers` | 0.27 | Docker-based E2E tests for install config verification |
+| `testcontainers` | 0.27.3 | Docker-based E2E tests for install config verification |
 
 ### Codegen Crate (`mcp-tools-codegen`)
 
@@ -75,7 +74,7 @@ All configuration via CLI flags (clap):
 
 Environment variables:
 - `RUST_LOG` — controls log level (e.g. `RUST_LOG=debug`)
-- Azure credentials are resolved via `DefaultAzureCredential` (environment variables, managed identity, Azure CLI, etc.)
+- Azure credentials are resolved via an ordered credential chain: managed identity (production / Azure-hosted) → Azure CLI → Azure Developer CLI (local development)
 
 ## Transport Modes
 
@@ -94,7 +93,7 @@ Tool registration uses a two-phase code generation approach:
 - Base URL: `https://dev.azure.com/{organization}/{project}/_apis/`
 - VSSPS URL: `https://app.vssps.visualstudio.com/_apis/`
 - API version: 7.1 (Comments API: 7.2-preview.4)
-- Auth: Bearer token via `DefaultAzureCredential` (scope: `499b84ac-1321-427f-aa17-267ca6975798`)
+- Auth: Bearer token via the Azure credential chain (scope: `499b84ac-1321-427f-aa17-267ca6975798`)
 - Content types: `application/json`, `application/json-patch+json` (for work item create/update), `application/octet-stream` (binary)
 
 ## Output Optimization
