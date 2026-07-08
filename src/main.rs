@@ -183,12 +183,44 @@ mod tests {
     #[test]
     fn test_allowed_host_rejects_empty_value() {
         for value in ["", "   "] {
-            let result = Args::try_parse_from(["test", "--server", "--allowed-host", value]);
-            assert!(
-                result.is_err(),
-                "empty/whitespace --allowed-host '{value}' must be rejected so the loopback default is not replaced by a match-nothing list"
+            let err = Args::try_parse_from(["test", "--server", "--allowed-host", value])
+                .expect_err("empty/whitespace --allowed-host must be rejected");
+            assert_eq!(
+                err.kind(),
+                clap::error::ErrorKind::ValueValidation,
+                "empty/whitespace '{value}' must be rejected by the value parser so the loopback default is not replaced by a match-nothing list"
             );
         }
+    }
+
+    #[test]
+    fn test_allowed_host_trims_surrounding_whitespace() {
+        let args = Args::try_parse_from(["test", "--server", "--allowed-host", "  example.com  "])
+            .unwrap();
+        assert_eq!(
+            args.allowed_hosts,
+            vec!["example.com".to_string()],
+            "surrounding whitespace must be trimmed so it never reaches the allow-list"
+        );
+    }
+
+    #[test]
+    fn test_allowed_host_allows_duplicates() {
+        // Duplicates are accepted at parse time (rmcp deduplicates at match
+        // time via `.any()`); they must not be rejected as invalid.
+        let args = Args::try_parse_from([
+            "test",
+            "--server",
+            "--allowed-host",
+            "example.com",
+            "--allowed-host",
+            "example.com",
+        ])
+        .unwrap();
+        assert_eq!(
+            args.allowed_hosts,
+            vec!["example.com".to_string(), "example.com".to_string()]
+        );
     }
 
     #[test]

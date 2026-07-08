@@ -148,6 +148,17 @@ mod tests {
             allowed.status()
         );
 
+        // Host matching is case-insensitive (rmcp lowercases before comparing).
+        let allowed_upper = initialize_request(&client, addr, "EXAMPLE.COM")
+            .send()
+            .await
+            .unwrap();
+        assert!(
+            allowed_upper.status().is_success(),
+            "Host matching must be case-insensitive; 'EXAMPLE.COM' must be accepted, got {}",
+            allowed_upper.status()
+        );
+
         // A request with a Host outside the allow-list is rejected, even though
         // the underlying socket is the loopback address it connected to.
         let rejected = initialize_request(&client, addr, "attacker.example")
@@ -179,6 +190,26 @@ mod tests {
             "non-loopback Host must be rejected by the loopback-only default, got {}",
             rejected.status()
         );
+    }
+
+    #[tokio::test]
+    async fn test_default_accepts_loopback_hosts() {
+        // The positive half of the secure default: with no allow-list, the
+        // loopback hosts rmcp permits by default are accepted.
+        let addr = spawn_server(Vec::new()).await;
+        let client = reqwest::Client::new();
+
+        for host in ["localhost", "127.0.0.1", "[::1]"] {
+            let accepted = initialize_request(&client, addr, host)
+                .send()
+                .await
+                .unwrap();
+            assert!(
+                accepted.status().is_success(),
+                "loopback Host '{host}' must be accepted under the default, got {}",
+                accepted.status()
+            );
+        }
     }
 
     #[tokio::test]
@@ -228,5 +259,28 @@ mod tests {
             "loopback must be rejected once the allow-list replaces the default, got {}",
             loopback.status()
         );
+
+        // A port-less allow entry ("a.example") matches the host on ANY port.
+        let any_port = initialize_request(&client, addr, "a.example:8080")
+            .send()
+            .await
+            .unwrap();
+        assert!(
+            any_port.status().is_success(),
+            "port-less allow entry must match any port; 'a.example:8080' expected 2xx, got {}",
+            any_port.status()
+        );
+
+        // A port-scoped allow entry ("mcp.internal:8443") requires an exact
+        // port match: a mismatched port and a port-less Host are both rejected.
+        for bad in ["mcp.internal:9999", "mcp.internal"] {
+            let response = initialize_request(&client, addr, bad).send().await.unwrap();
+            assert_eq!(
+                response.status().as_u16(),
+                403,
+                "port-scoped entry must reject a mismatched/absent port; '{bad}' expected 403, got {}",
+                response.status()
+            );
+        }
     }
 }
