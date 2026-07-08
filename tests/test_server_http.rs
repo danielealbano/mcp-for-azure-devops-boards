@@ -13,7 +13,7 @@ mod tests {
         let addr = listener.local_addr().unwrap();
 
         let server_handle = tokio::spawn(async move {
-            let _ = http::run_server(server, listener).await;
+            let _ = http::run_server(server, listener, Vec::new()).await;
         });
 
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
@@ -46,7 +46,7 @@ mod tests {
         let addr = listener.local_addr().unwrap();
 
         let server_handle = tokio::spawn(async move {
-            let _ = http::run_server(server, listener).await;
+            let _ = http::run_server(server, listener, Vec::new()).await;
         });
 
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
@@ -76,7 +76,7 @@ mod tests {
         let addr = listener.local_addr().unwrap();
 
         let server_handle = tokio::spawn(async move {
-            let _ = http::run_server(server, listener).await;
+            let _ = http::run_server(server, listener, Vec::new()).await;
         });
 
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
@@ -101,5 +101,83 @@ mod tests {
         );
 
         server_handle.abort();
+    }
+
+    // Spawns the HTTP server on an ephemeral loopback port with the given
+    // allowed-host list and returns its address. The listener is bound (and
+    // thus listening) before the accept task starts, so connections queue in
+    // the TCP backlog until it runs — no readiness sleep is required.
+    async fn spawn_server(allowed_hosts: Vec<String>) -> std::net::SocketAddr {
+        let server = AzureMcpServer::new_with_api(MockAzureDevOpsApi::new());
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let _ = http::run_server(server, listener, allowed_hosts).await;
+        });
+        addr
+    }
+
+    fn initialize_request(
+        client: &reqwest::Client,
+        addr: std::net::SocketAddr,
+        host: &str,
+    ) -> reqwest::RequestBuilder {
+        client
+            .post(format!("http://{}/mcp", addr))
+            .header(reqwest::header::HOST, host)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json, text/event-stream")
+            .body(r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}"#)
+    }
+
+    #[tokio::test]
+    async fn test_allowed_host_permits_configured_and_rejects_others() {
+        let addr = spawn_server(vec!["example.com".to_string()]).await;
+        let client = reqwest::Client::new();
+
+        // A request whose Host matches the configured allow-list passes
+        // DNS-rebinding validation and reaches MCP handling (not 403).
+        let allowed = initialize_request(&client, addr, "example.com")
+            .send()
+            .await
+            .unwrap();
+        assert_ne!(
+            allowed.status().as_u16(),
+            403,
+            "configured Host 'example.com' must be accepted, got {}",
+            allowed.status()
+        );
+
+        // A request with a Host outside the allow-list is rejected, even though
+        // the underlying socket is the loopback address it connected to.
+        let rejected = initialize_request(&client, addr, "attacker.example")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            rejected.status().as_u16(),
+            403,
+            "Host outside the allow-list must be rejected with 403, got {}",
+            rejected.status()
+        );
+    }
+
+    #[tokio::test]
+    async fn test_default_rejects_non_loopback_host() {
+        // With no allow-list the rmcp secure default permits only loopback
+        // hosts, so a non-loopback Host must be rejected with 403.
+        let addr = spawn_server(Vec::new()).await;
+        let client = reqwest::Client::new();
+
+        let rejected = initialize_request(&client, addr, "attacker.example")
+            .send()
+            .await
+            .unwrap();
+        assert_eq!(
+            rejected.status().as_u16(),
+            403,
+            "non-loopback Host must be rejected by the loopback-only default, got {}",
+            rejected.status()
+        );
     }
 }

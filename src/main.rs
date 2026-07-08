@@ -22,6 +22,13 @@ pub(crate) struct Args {
     /// Install MCP server configuration for the specified client
     #[arg(long, value_enum, conflicts_with = "server")]
     install: Option<InstallTarget>,
+
+    /// Allowed `Host` header value for the HTTP server (repeatable; only valid
+    /// with --server). When omitted, only loopback hosts (localhost, 127.0.0.1,
+    /// ::1) are accepted, which prevents DNS rebinding attacks. Provide your
+    /// deployment hostname(s) to serve behind a proxy or on a public interface.
+    #[arg(long = "allowed-host", value_name = "HOST", requires = "server")]
+    allowed_hosts: Vec<String>,
 }
 
 #[tokio::main]
@@ -44,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.server {
         let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", args.port)).await?;
         log::info!("Starting web server on {}", listener.local_addr()?);
-        http::run_server(mcp_server, listener).await?;
+        http::run_server(mcp_server, listener, args.allowed_hosts).await?;
     } else {
         log::info!("Starting stdio server");
         let service = mcp_server.serve(stdio()).await?;
@@ -85,6 +92,48 @@ mod tests {
         let args = Args::try_parse_from(["test", "--server", "--port", "8080"]).unwrap();
         assert!(args.server);
         assert_eq!(args.port, 8080);
+    }
+
+    #[test]
+    fn test_allowed_host_defaults_to_empty() {
+        let args = Args::try_parse_from(["test", "--server"]).unwrap();
+        assert!(
+            args.allowed_hosts.is_empty(),
+            "allowed_hosts must be empty by default so the loopback-only secure default applies"
+        );
+    }
+
+    #[test]
+    fn test_allowed_host_single() {
+        let args =
+            Args::try_parse_from(["test", "--server", "--allowed-host", "example.com"]).unwrap();
+        assert_eq!(args.allowed_hosts, vec!["example.com".to_string()]);
+    }
+
+    #[test]
+    fn test_allowed_host_repeatable() {
+        let args = Args::try_parse_from([
+            "test",
+            "--server",
+            "--allowed-host",
+            "example.com",
+            "--allowed-host",
+            "mcp.internal:8443",
+        ])
+        .unwrap();
+        assert_eq!(
+            args.allowed_hosts,
+            vec!["example.com".to_string(), "mcp.internal:8443".to_string()]
+        );
+    }
+
+    #[test]
+    fn test_allowed_host_requires_server() {
+        let result = Args::try_parse_from(["test", "--allowed-host", "example.com"]);
+        assert!(
+            result.is_err(),
+            "--allowed-host without --server must be rejected"
+        );
     }
 
     #[test]

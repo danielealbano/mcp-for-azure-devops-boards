@@ -5,7 +5,7 @@ use hyper_util::{
     service::TowerToHyperService,
 };
 use rmcp::transport::streamable_http_server::{
-    StreamableHttpService, session::local::LocalSessionManager,
+    StreamableHttpServerConfig, StreamableHttpService, session::local::LocalSessionManager,
 };
 use std::sync::Arc;
 use tokio::sync::Semaphore;
@@ -15,11 +15,20 @@ const MAX_CONNECTIONS: usize = 256;
 pub async fn run_server(
     server: AzureMcpServer,
     listener: tokio::net::TcpListener,
+    allowed_hosts: Vec<String>,
 ) -> std::io::Result<()> {
+    // Preserve rmcp's secure default (loopback-only `Host` validation, which
+    // guards against DNS rebinding) unless the operator explicitly provides an
+    // allow-list, in which case it fully replaces the default.
+    let mut config = StreamableHttpServerConfig::default();
+    if !allowed_hosts.is_empty() {
+        config = config.with_allowed_hosts(allowed_hosts);
+    }
+
     let service = TowerToHyperService::new(StreamableHttpService::new(
         move || Ok(server.clone()),
         LocalSessionManager::default().into(),
-        Default::default(),
+        config,
     ));
 
     let semaphore = Arc::new(Semaphore::new(MAX_CONNECTIONS));
