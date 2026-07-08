@@ -1,5 +1,5 @@
-use azure_core::auth::TokenCredential;
-use azure_identity::DefaultAzureCredential;
+use azure_core::credentials::TokenCredential;
+use azure_identity::{AzureCliCredential, AzureDeveloperCliCredential, ManagedIdentityCredential};
 use reqwest::{Client, Method};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -22,7 +22,27 @@ pub enum AzureError {
 
 pub struct AzureDevOpsClient {
     client: Client,
-    credential: Arc<DefaultAzureCredential>,
+    credentials: Vec<Arc<dyn TokenCredential>>,
+}
+
+/// Builds the ordered credential fallback chain that replaces the
+/// `DefaultAzureCredential` removed in azure_identity 1.0. Sources are tried in
+/// order at token-acquisition time: managed identity first (production /
+/// Azure-hosted deployments), then the Azure CLI and Azure Developer CLI (local
+/// development). A source that fails to initialize is skipped so the remaining
+/// sources can still be used, mirroring the previous default-credential behavior.
+fn build_credential_chain() -> Vec<Arc<dyn TokenCredential>> {
+    let mut sources: Vec<Arc<dyn TokenCredential>> = Vec::new();
+    if let Ok(credential) = ManagedIdentityCredential::new(None) {
+        sources.push(credential);
+    }
+    if let Ok(credential) = AzureCliCredential::new(None) {
+        sources.push(credential);
+    }
+    if let Ok(credential) = AzureDeveloperCliCredential::new(None) {
+        sources.push(credential);
+    }
+    sources
 }
 
 impl Default for AzureDevOpsClient {
@@ -33,14 +53,27 @@ impl Default for AzureDevOpsClient {
 
 impl AzureDevOpsClient {
     pub fn new() -> Self {
-        let credential = Arc::new(DefaultAzureCredential::default());
         let client = Client::new();
-        Self { client, credential }
+        Self {
+            client,
+            credentials: build_credential_chain(),
+        }
     }
 
     async fn get_token(&self) -> Result<String, AzureError> {
-        let token_response = self.credential.get_token(AZURE_DEVOPS_SCOPE).await?;
-        Ok(token_response.token.secret().to_string())
+        let mut last_error: Option<azure_core::Error> = None;
+        for credential in &self.credentials {
+            match credential.get_token(&[AZURE_DEVOPS_SCOPE], None).await {
+                Ok(token) => return Ok(token.token.secret().to_string()),
+                Err(error) => last_error = Some(error),
+            }
+        }
+        Err(match last_error {
+            Some(error) => AzureError::AuthError(error),
+            None => {
+                AzureError::ApiError("no Azure credential sources could be initialized".to_string())
+            }
+        })
     }
 
     pub async fn request_with_content_type<T: DeserializeOwned>(
@@ -431,5 +464,22 @@ impl AzureDevOpsClient {
 
         let bytes = response.bytes().await?;
         Ok(bytes.to_vec())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_build_credential_chain_is_not_empty() {
+        // Credential construction is environment-independent (network calls
+        // happen only at get_token time), so the chain must always expose at
+        // least one source for get_token to try.
+        let chain = build_credential_chain();
+        assert!(
+            !chain.is_empty(),
+            "credential chain must contain at least one source"
+        );
     }
 }

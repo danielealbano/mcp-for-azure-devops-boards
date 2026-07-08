@@ -18,8 +18,8 @@ mcp-tools-codegen = { path = "mcp-tools-codegen" }
 hyper = "1.5.1"
 hyper-util = { version = "0.1.10", features = ["tokio", "service", "server", "http1", "http2"] }
 tower = "0.5.2"
-azure_identity = "0.17"
-azure_core = "0.17"
+azure_identity = "1"
+azure_core = "1"
 reqwest = { version = "0.13", default-features = false, features = ["json", "multipart", "native-tls"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
