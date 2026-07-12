@@ -248,5 +248,5 @@ graph LR
 
 - `AzureMcpServer` is `Clone` (wraps `Arc<dyn AzureDevOpsApi>`)
 - Each HTTP connection gets a clone of `AzureMcpServer`
-- `AzureDevOpsClient` contains `reqwest::Client` (internally Arc'd, connection-pooled) and an ordered credential chain (`Vec<Arc<dyn TokenCredential>>`)
+- `AzureDevOpsClient` contains `reqwest::Client` (internally Arc'd, connection-pooled) and an ordered credential chain (`Vec<CredentialSource>`: environment client-secret → Azure CLI → Azure Developer CLI → managed identity, the last bounded by a 2s timeout)
 - Bearer tokens are fetched per-request (credential SDK handles caching)

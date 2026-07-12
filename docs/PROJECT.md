@@ -29,7 +29,7 @@ Cargo workspace with two members:
 | `clap` | 4 | CLI argument parsing (derive mode) |
 | `tokio` | 1 (full) | Async runtime |
 | `reqwest` | 0.13 | HTTP client for Azure DevOps REST API (json, multipart, native-tls) |
-| `azure_identity` | 1.0 | Azure authentication (credential chain: managed identity → Azure CLI → azd) |
+| `azure_identity` | 1.0 | Azure authentication (credential chain: environment client-secret → Azure CLI → azd → managed identity) |
 | `azure_core` | 1.0 | Azure SDK core types (`TokenCredential`) |
 | `serde` + `serde_json` | 1.0 | Serialization / deserialization |
 | `thiserror` | 2 | Typed error enums (`AzureError`) |
@@ -74,7 +74,8 @@ All configuration via CLI flags (clap):
 
 Environment variables:
 - `RUST_LOG` — controls log level (e.g. `RUST_LOG=debug`)
-- Azure credentials are resolved via an ordered credential chain: managed identity (production / Azure-hosted) → Azure CLI → Azure Developer CLI (local development)
+- `AZURE_TENANT_ID` / `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` — configure the environment client-secret credential; it is used only when all three are set (if only some are set it is skipped with a warning)
+- Azure credentials are resolved via an ordered credential chain: environment client-secret (`AZURE_TENANT_ID` / `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET`) → Azure CLI → Azure Developer CLI (local development) → managed identity (production / Azure-hosted). The managed-identity attempt is bounded by a 2s timeout so its IMDS probe fails fast off Azure.
 
 ## Transport Modes
 

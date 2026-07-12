@@ -50,7 +50,14 @@ The path to the binary will be `%USERPROFILE%\scoop\apps\mcp-for-azure-devops-bo
 
 ### Authentication
 
-This server leverages standard Azure authentication mechanisms (like `az` or `azd`) to query Azure DevOps.
+This server leverages standard Azure authentication mechanisms to query Azure DevOps. At each request it resolves a Bearer token by trying the following credential sources **in order**, using the first one that succeeds:
+
+1. **Environment (client secret)** — used only when `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, and `AZURE_CLIENT_SECRET` are **all** set. If only some are set, it is skipped with a warning.
+2. **Azure CLI** (`az login`)
+3. **Azure Developer CLI** (`azd auth login`)
+4. **Managed identity** — for Azure-hosted deployments. Off Azure this probe is unreachable, so it is bounded by a **2-second timeout** and then skipped, ensuring the chain never hangs.
+
+For local development, signing in with the Azure CLI (below) is the simplest option.
 
 #### Installing Azure CLI
 
