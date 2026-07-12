@@ -50,14 +50,16 @@ The path to the binary will be `%USERPROFILE%\scoop\apps\mcp-for-azure-devops-bo
 
 ### Authentication
 
-This server leverages standard Azure authentication mechanisms to query Azure DevOps. At each request it resolves a Bearer token by trying the following credential sources **in order**, using the first one that succeeds:
+This server leverages standard Azure authentication mechanisms to query Azure DevOps. On **every** request it acquires a Bearer token for the Azure DevOps REST API (scope `499b84ac-1321-427f-aa17-267ca6975798/.default`) by trying the following credential sources **in order** and using the first one that returns a token:
 
 1. **Environment (client secret)** — used only when `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, and `AZURE_CLIENT_SECRET` are **all** set. If only some are set, it is skipped with a warning.
-2. **Azure CLI** (`az login`)
-3. **Azure Developer CLI** (`azd auth login`)
+2. **Azure CLI** — runs `az account get-access-token` for the Azure DevOps scope, using your `az login` session.
+3. **Azure Developer CLI** — uses your `azd auth login` session.
 4. **Managed identity** — for Azure-hosted deployments. Off Azure this probe is unreachable, so it is bounded by a **2-second timeout** and then skipped, ensuring the chain never hangs.
 
-For local development, signing in with the Azure CLI (below) is the simplest option.
+If **all** sources fail, the returned error lists each source's failure so you can see exactly why (for example, an Azure CLI consent error alongside "azd not found on PATH"), rather than only the last one tried.
+
+For local development, signing in with the Azure CLI (below) is the simplest option — you must have run `az login` with access to the target Azure DevOps organization.
 
 #### Installing Azure CLI
 
