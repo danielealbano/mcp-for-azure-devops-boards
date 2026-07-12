@@ -110,7 +110,16 @@ The fastest way to register the MCP server with your preferred client:
 mcp-for-azure-devops-boards --install <target>
 ```
 
-Valid targets: `claude-code`, `claude-desktop`, `cursor`, `vscode`, `codex`, `gemini-cli`.
+Valid targets and where each writes its configuration:
+
+| Target | Config file | Scope |
+|---|---|---|
+| `claude-code` | `~/.claude.json` | Global (home) |
+| `claude-desktop` | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Linux: `~/.config/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\Claude\claude_desktop_config.json` | Global (per-user) |
+| `cursor` | `~/.cursor/mcp.json` | Global (home) |
+| `vscode` | `.vscode/mcp.json` | Workspace (current directory) |
+| `codex` | `~/.codex/config.toml` | Global (home) |
+| `gemini-cli` | `~/.gemini/settings.json` | Global (home) |
 
 The command auto-detects the binary path, resolves the correct config file location, and writes the entry in the expected format. Existing configuration is preserved.
 
