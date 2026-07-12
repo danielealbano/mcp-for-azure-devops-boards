@@ -55,10 +55,10 @@ Tool registration uses a two-phase code-generation approach — do NOT bypass it
 
 ## 6) Azure DevOps API Integration — ABSOLUTE RULES
 
-- `AzureDevOpsClient` (`src/azure/client.rs`) holds a `reqwest::Client` and an ordered credential chain (`Vec<Arc<dyn TokenCredential>>`, managed identity → Azure CLI → Azure Developer CLI); Bearer tokens are fetched per-request via `get_token()`.
+- `AzureDevOpsClient` (`src/azure/client.rs`) holds a `reqwest::Client` and an ordered credential chain (`Vec<CredentialSource>`, environment client-secret → Azure CLI → Azure Developer CLI → managed identity); `get_token()` tries each source in order, applying a per-source timeout (only managed identity carries one, 2s, so its IMDS probe fails fast off Azure). Bearer tokens are fetched per-request.
 - API modules (`boards.rs`, `work_items.rs`, etc.) are standalone functions taking `&AzureDevOpsClient` as the first parameter, invoked through the HTTP helpers (`get`, `post`, `patch`, `org_request`, `team_request`, `vssps_request`).
 - Base URL: `https://dev.azure.com/{organization}/{project}/_apis/`; VSSPS: `https://app.vssps.visualstudio.com/_apis/`.
-- API version **7.1** (Comments API `7.2-preview.4`). Auth scope: `499b84ac-1321-427f-aa17-267ca6975798`.
+- API version **7.1** (Comments API `7.2-preview.4`). Auth scope: `499b84ac-1321-427f-aa17-267ca6975798/.default` (the Azure DevOps resource app ID with the required OAuth2 v2.0 `/.default` suffix; the bare GUID is rejected by the Azure CLI with `AADSTS65002`).
 - Content types: `application/json`, `application/json-patch+json` (work item create/update), `application/octet-stream` (binary).
 - Work-item fetching is batched (200 per batch, 1000 max).
 - Build request URLs safely — no user-controlled format strings that could lead to URL injection; URL-encode user-provided path/query segments.
