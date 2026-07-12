@@ -10,7 +10,13 @@ use std::sync::Arc;
 use std::time::Duration;
 use thiserror::Error;
 
-const AZURE_DEVOPS_SCOPE: &str = "499b84ac-1321-427f-aa17-267ca6975798";
+/// OAuth2 v2.0 scope for the Azure DevOps REST API: the Azure DevOps resource
+/// application ID (`499b84ac-1321-427f-aa17-267ca6975798`) with the required
+/// `/.default` suffix. The bare resource GUID is a v1.0 "resource" value and is
+/// rejected by the Azure CLI (`az account get-access-token --scope`) with an
+/// `AADSTS65002` consent error; managed identity strips `/.default` back to the
+/// v1.0 resource itself, so this form is correct for every credential source.
+const AZURE_DEVOPS_SCOPE: &str = "499b84ac-1321-427f-aa17-267ca6975798/.default";
 
 /// Environment variables that configure the "environment" (client-secret)
 /// credential. All three MUST be present for that credential to be used.
@@ -169,18 +175,23 @@ impl AzureDevOpsClient {
             ));
         }
 
-        let mut last_error: Option<azure_core::Error> = None;
+        // Every source is tried in order; the first success returns. If they
+        // all fail, each failure is aggregated into the error so no meaningful
+        // failure (e.g. an Azure CLI consent error) is masked by a later,
+        // less-useful one (e.g. "azd not found on PATH").
+        let mut failures: Vec<String> = Vec::new();
         for source in &self.credentials {
             let attempt = source.credential.get_token(&[AZURE_DEVOPS_SCOPE], None);
             let outcome = match source.timeout {
                 Some(limit) => match tokio::time::timeout(limit, attempt).await {
                     Ok(outcome) => outcome,
                     Err(_elapsed) => {
+                        let detail = format!("timed out after {limit:?}");
                         log::warn!(
-                            "{} credential timed out after {:?}; trying the next source",
-                            source.label,
-                            limit
+                            "{} credential {detail}; trying the next source",
+                            source.label
                         );
+                        failures.push(format!("{}: {detail}", source.label));
                         continue;
                     }
                 },
@@ -191,17 +202,15 @@ impl AzureDevOpsClient {
                 Ok(token) => return Ok(token.token.secret().to_string()),
                 Err(error) => {
                     log::debug!("{} credential failed: {error}", source.label);
-                    last_error = Some(error);
+                    failures.push(format!("{}: {error}", source.label));
                 }
             }
         }
 
-        Err(match last_error {
-            Some(error) => AzureError::AuthError(error),
-            None => AzureError::ApiError(
-                "all Azure credential sources timed out or were unavailable".to_string(),
-            ),
-        })
+        Err(AzureError::ApiError(format!(
+            "all Azure credential sources failed: [{}]",
+            failures.join("; ")
+        )))
     }
 
     pub async fn request_with_content_type<T: DeserializeOwned>(
@@ -794,9 +803,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_token_all_sources_error_returns_auth_error() {
-        // When every source fails (non-timeout), the last error is surfaced as
-        // an AuthError rather than the "no sources" / "all timed out" ApiError.
+    async fn test_get_token_all_sources_error_aggregates_failures() {
+        // When every source fails, the error aggregates each labeled failure so
+        // none is masked by a later, less-useful one.
         let client = AzureDevOpsClient::with_credentials(vec![
             source("first", None, Err(()), None),
             source("second", None, Err(()), None),
@@ -805,9 +814,12 @@ mod tests {
             .get_token()
             .await
             .expect_err("all-error chain must error");
+        let AzureError::ApiError(message) = error else {
+            panic!("all-error chain must yield ApiError, got {error:?}");
+        };
         assert!(
-            matches!(error, AzureError::AuthError(_)),
-            "all-error chain must yield AuthError, got {error:?}"
+            message.contains("first:") && message.contains("second:"),
+            "aggregated error must name every failed source, got: {message}"
         );
     }
 
@@ -838,9 +850,12 @@ mod tests {
             .get_token()
             .await
             .expect_err("all-timeout must error");
+        let AzureError::ApiError(message) = error else {
+            panic!("all-timeout must yield ApiError, got {error:?}");
+        };
         assert!(
-            matches!(error, AzureError::ApiError(_)),
-            "all-timeout must yield ApiError, got {error:?}"
+            message.contains("slow:") && message.contains("timed out"),
+            "aggregated error must report the timed-out source, got: {message}"
         );
     }
 }
